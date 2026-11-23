@@ -1,0 +1,1904 @@
+{
+  "episodes": {
+    "free": {
+      "isAccessibleForFree": true,
+      "url": "https://podcast.example/shows/lantern-hours/02-the-drawer-that-sticks.html",
+      "image": "https://podcast.example/covers/lantern-hours.svg",
+      "description": "Swollen runners, worn guides and the candle-wax trick, and when wax only hides the problem.",
+      "audio": {
+        "@id": "https://podcast.example/shows/lantern-hours/02-the-drawer-that-sticks.html#audio"
+      },
+      "mainEntityOfPage": {
+        "@id": "https://podcast.example/shows/lantern-hours/02-the-drawer-that-sticks.html"
+      },
+      "partOfSeries": {
+        "@type": "PodcastSeries",
+        "name": "Lantern Hours",
+        "@id": "https://podcast.example/shows/lantern-hours.html#series",
+        "url": "https://podcast.example/shows/lantern-hours.html"
+      },
+      "potentialAction": [
+        {
+          "actionAccessibilityRequirement": {
+            "@type": "ActionAccessSpecification",
+            "category": "nologinrequired"
+          },
+          "name": "Listen",
+          "@id": "https://podcast.example/shows/lantern-hours/02-the-drawer-that-sticks.html#listen",
+          "@type": "ListenAction",
+          "target": {
+            "actionPlatform": [
+              "https://schema.org/DesktopWebPlatform",
+              "https://schema.org/MobileWebPlatform"
+            ],
+            "@type": "EntryPoint",
+            "urlTemplate": "https://podcast.example/shows/lantern-hours/02-the-drawer-that-sticks.html#player"
+          },
+          "nxis:reportToken": "tok.listen"
+        },
+        {
+          "name": "Subscribe to Lantern Hours",
+          "@id": "https://podcast.example/shows/lantern-hours.html#subscribe",
+          "@type": "SubscribeAction",
+          "target": {
+            "actionPlatform": [
+              "https://schema.org/DesktopWebPlatform",
+              "https://schema.org/MobileWebPlatform"
+            ],
+            "@type": "EntryPoint",
+            "urlTemplate": "https://podcast.example/subscribe/lantern-hours.html"
+          },
+          "nxis:reportToken": "tok.subscribe"
+        }
+      ],
+      "episodeNumber": 2,
+      "publisher": {
+        "@type": "Organization",
+        "name": "Brackwater Audio",
+        "@id": "https://podcast.example/#organization",
+        "url": "https://podcast.example/"
+      },
+      "@type": "PodcastEpisode",
+      "datePublished": "2026-07-13",
+      "duration": "PT10S",
+      "author": [
+        {
+          "@type": "Person",
+          "name": "Ines Marlowe-Okafor"
+        },
+        {
+          "@type": "Person",
+          "name": "Pell Ruskin"
+        }
+      ],
+      "name": "The drawer that sticks",
+      "inLanguage": "en",
+      "@id": "https://podcast.example/shows/lantern-hours/02-the-drawer-that-sticks.html#episode",
+      "associatedMedia": {
+        "duration": "PT10S",
+        "isAccessibleForFree": true,
+        "transcript": "Lantern Hours, episode two. The drawer that sticks. Before you sand anything, find where it rubs. A strip of chalk on the runner will tell you.",
+        "uploadDate": "2026-07-13",
+        "@type": "AudioObject",
+        "contentUrl": "https://podcast.example/audio/lantern-hours/02.mp3",
+        "encodingFormat": "audio/mpeg",
+        "@id": "https://podcast.example/shows/lantern-hours/02-the-drawer-that-sticks.html#audio",
+        "name": "The drawer that sticks",
+        "inLanguage": "en",
+        "contentSize": "28.7 KB",
+        "embedUrl": "https://podcast.example/embed/lantern-hours/02.html"
+      }
+    },
+    "preview": {
+      "url": "https://podcast.example/shows/lantern-hours/04-recaning-a-chair-seat.html",
+      "image": "https://podcast.example/covers/lantern-hours.svg",
+      "description": "Strand cane, pre-woven sheet and the seven steps of the traditional weave. The opening is a free preview; the full episode is for supporters.",
+      "audio": {
+        "@id": "https://podcast.example/shows/lantern-hours/04-recaning-a-chair-seat.html#audio"
+      },
+      "mainEntityOfPage": {
+        "@id": "https://podcast.example/shows/lantern-hours/04-recaning-a-chair-seat.html"
+      },
+      "partOfSeries": {
+        "@type": "PodcastSeries",
+        "name": "Lantern Hours",
+        "@id": "https://podcast.example/shows/lantern-hours.html#series",
+        "url": "https://podcast.example/shows/lantern-hours.html"
+      },
+      "potentialAction": [
+        {
+          "actionAccessibilityRequirement": {
+            "@type": "ActionAccessSpecification",
+            "category": "nologinrequired"
+          },
+          "name": "Listen to the free preview",
+          "@id": "https://podcast.example/shows/lantern-hours/04-recaning-a-chair-seat.html#listen",
+          "@type": "ListenAction",
+          "target": {
+            "actionPlatform": [
+              "https://schema.org/DesktopWebPlatform",
+              "https://schema.org/MobileWebPlatform"
+            ],
+            "@type": "EntryPoint",
+            "urlTemplate": "https://podcast.example/shows/lantern-hours/04-recaning-a-chair-seat.html#player"
+          },
+          "nxis:reportToken": "tok.listen"
+        },
+        {
+          "name": "Subscribe to Lantern Hours",
+          "@id": "https://podcast.example/shows/lantern-hours.html#subscribe",
+          "@type": "SubscribeAction",
+          "target": {
+            "actionPlatform": [
+              "https://schema.org/DesktopWebPlatform",
+              "https://schema.org/MobileWebPlatform"
+            ],
+            "@type": "EntryPoint",
+            "urlTemplate": "https://podcast.example/subscribe/lantern-hours.html"
+          },
+          "nxis:reportToken": "tok.subscribe"
+        }
+      ],
+      "episodeNumber": 4,
+      "publisher": {
+        "@type": "Organization",
+        "name": "Brackwater Audio",
+        "@id": "https://podcast.example/#organization",
+        "url": "https://podcast.example/"
+      },
+      "@type": "PodcastEpisode",
+      "datePublished": "2026-07-27",
+      "duration": "PT11S",
+      "author": [
+        {
+          "@type": "Person",
+          "name": "Ines Marlowe-Okafor"
+        },
+        {
+          "@type": "Person",
+          "name": "Pell Ruskin"
+        }
+      ],
+      "name": "Re-caning a chair seat",
+      "inLanguage": "en",
+      "hasPart": {
+        "@type": "WebPageElement",
+        "isAccessibleForFree": false,
+        "cssSelector": ".full-episode"
+      },
+      "isAccessibleForFree": false,
+      "@id": "https://podcast.example/shows/lantern-hours/04-recaning-a-chair-seat.html#episode",
+      "associatedMedia": [
+        {
+          "duration": "PT8S",
+          "isAccessibleForFree": true,
+          "transcript": "Lantern Hours, episode four. Re-caning a chair seat. Soak the cane first, so it bends instead of splitting.",
+          "uploadDate": "2026-07-27",
+          "@type": "AudioObject",
+          "contentUrl": "https://podcast.example/audio/lantern-hours/04-preview.mp3",
+          "encodingFormat": "audio/mpeg",
+          "@id": "https://podcast.example/shows/lantern-hours/04-recaning-a-chair-seat.html#preview-audio",
+          "name": "Re-caning a chair seat (free preview)",
+          "inLanguage": "en",
+          "contentSize": "23.2 KB",
+          "embedUrl": "https://podcast.example/embed/lantern-hours/04.html"
+        },
+        {
+          "duration": "PT11S",
+          "isAccessibleForFree": false,
+          "contentSize": "31.5 KB",
+          "requiresSubscription": {
+            "description": "Every Lantern Hours episode, ad-free, plus the archive.",
+            "expectsAcceptanceOf": {
+              "name": "Lantern Hours Supporters",
+              "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+              "priceCurrency": "USD",
+              "price": 5,
+              "availability": "https://schema.org/InStock",
+              "priceSpecification": {
+                "priceCurrency": "USD",
+                "@type": "UnitPriceSpecification",
+                "price": 5,
+                "billingDuration": "P1M"
+              },
+              "@type": "Offer"
+            },
+            "@type": "MediaSubscription",
+            "@id": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+            "authenticator": {
+              "@type": "Organization",
+              "name": "Brackwater Audio",
+              "@id": "https://podcast.example/#organization",
+              "url": "https://podcast.example/"
+            },
+            "name": "Lantern Hours Supporters"
+          },
+          "transcript": "Lantern Hours, episode four. Re-caning a chair seat. Soak the cane first, so it bends instead of splitting. Then the seven steps, one row at a time.",
+          "uploadDate": "2026-07-27",
+          "@type": "AudioObject",
+          "contentUrl": "https://podcast.example/audio/lantern-hours/04.mp3",
+          "encodingFormat": "audio/mpeg",
+          "@id": "https://podcast.example/shows/lantern-hours/04-recaning-a-chair-seat.html#audio",
+          "name": "Re-caning a chair seat",
+          "inLanguage": "en"
+        }
+      ]
+    },
+    "paid": {
+      "isAccessibleForFree": false,
+      "url": "https://podcast.example/shows/lantern-hours/05-brass-tarnish-patience.html",
+      "image": "https://podcast.example/covers/lantern-hours.svg",
+      "description": "Cleaning brass hardware without polishing away its history.",
+      "audio": {
+        "@id": "https://podcast.example/shows/lantern-hours/05-brass-tarnish-patience.html#audio"
+      },
+      "mainEntityOfPage": {
+        "@id": "https://podcast.example/shows/lantern-hours/05-brass-tarnish-patience.html"
+      },
+      "partOfSeries": {
+        "@type": "PodcastSeries",
+        "name": "Lantern Hours",
+        "@id": "https://podcast.example/shows/lantern-hours.html#series",
+        "url": "https://podcast.example/shows/lantern-hours.html"
+      },
+      "potentialAction": [
+        {
+          "actionAccessibilityRequirement": {
+            "expectsAcceptanceOf": {
+              "name": "Lantern Hours Supporters",
+              "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+              "priceCurrency": "USD",
+              "price": 5,
+              "availability": "https://schema.org/InStock",
+              "priceSpecification": {
+                "priceCurrency": "USD",
+                "@type": "UnitPriceSpecification",
+                "price": 5,
+                "billingDuration": "P1M"
+              },
+              "@type": "Offer"
+            },
+            "requiresSubscription": {
+              "description": "Every Lantern Hours episode, ad-free, plus the archive.",
+              "expectsAcceptanceOf": {
+                "name": "Lantern Hours Supporters",
+                "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                "priceCurrency": "USD",
+                "price": 5,
+                "availability": "https://schema.org/InStock",
+                "priceSpecification": {
+                  "priceCurrency": "USD",
+                  "@type": "UnitPriceSpecification",
+                  "price": 5,
+                  "billingDuration": "P1M"
+                },
+                "@type": "Offer"
+              },
+              "@type": "MediaSubscription",
+              "@id": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+              "authenticator": {
+                "@type": "Organization",
+                "name": "Brackwater Audio",
+                "@id": "https://podcast.example/#organization",
+                "url": "https://podcast.example/"
+              },
+              "name": "Lantern Hours Supporters"
+            },
+            "@type": "ActionAccessSpecification",
+            "category": "subscription"
+          },
+          "name": "Listen",
+          "@id": "https://podcast.example/shows/lantern-hours/05-brass-tarnish-patience.html#listen",
+          "@type": "ListenAction",
+          "target": {
+            "actionPlatform": [
+              "https://schema.org/DesktopWebPlatform",
+              "https://schema.org/MobileWebPlatform"
+            ],
+            "@type": "EntryPoint",
+            "urlTemplate": "https://podcast.example/shows/lantern-hours/05-brass-tarnish-patience.html#player"
+          },
+          "nxis:reportToken": "tok.listen"
+        },
+        {
+          "name": "Subscribe to Lantern Hours",
+          "@id": "https://podcast.example/shows/lantern-hours.html#subscribe",
+          "@type": "SubscribeAction",
+          "target": {
+            "actionPlatform": [
+              "https://schema.org/DesktopWebPlatform",
+              "https://schema.org/MobileWebPlatform"
+            ],
+            "@type": "EntryPoint",
+            "urlTemplate": "https://podcast.example/subscribe/lantern-hours.html"
+          },
+          "nxis:reportToken": "tok.subscribe"
+        }
+      ],
+      "episodeNumber": 5,
+      "publisher": {
+        "@type": "Organization",
+        "name": "Brackwater Audio",
+        "@id": "https://podcast.example/#organization",
+        "url": "https://podcast.example/"
+      },
+      "@type": "PodcastEpisode",
+      "datePublished": "2026-08-03",
+      "duration": "PT9S",
+      "author": [
+        {
+          "@type": "Person",
+          "name": "Ines Marlowe-Okafor"
+        },
+        {
+          "@type": "Person",
+          "name": "Pell Ruskin"
+        }
+      ],
+      "name": "Brass, tarnish and patience",
+      "inLanguage": "en",
+      "@id": "https://podcast.example/shows/lantern-hours/05-brass-tarnish-patience.html#episode",
+      "associatedMedia": {
+        "duration": "PT9S",
+        "isAccessibleForFree": false,
+        "requiresSubscription": {
+          "description": "Every Lantern Hours episode, ad-free, plus the archive.",
+          "expectsAcceptanceOf": {
+            "name": "Lantern Hours Supporters",
+            "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+            "priceCurrency": "USD",
+            "price": 5,
+            "availability": "https://schema.org/InStock",
+            "priceSpecification": {
+              "priceCurrency": "USD",
+              "@type": "UnitPriceSpecification",
+              "price": 5,
+              "billingDuration": "P1M"
+            },
+            "@type": "Offer"
+          },
+          "@type": "MediaSubscription",
+          "@id": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+          "authenticator": {
+            "@type": "Organization",
+            "name": "Brackwater Audio",
+            "@id": "https://podcast.example/#organization",
+            "url": "https://podcast.example/"
+          },
+          "name": "Lantern Hours Supporters"
+        },
+        "transcript": "Lantern Hours, episode five. Brass, tarnish and patience. Some tarnish is history. Clean the grime, keep the patina.",
+        "uploadDate": "2026-08-03",
+        "@type": "AudioObject",
+        "contentUrl": "https://podcast.example/audio/lantern-hours/05.mp3",
+        "encodingFormat": "audio/mpeg",
+        "@id": "https://podcast.example/shows/lantern-hours/05-brass-tarnish-patience.html#audio",
+        "name": "Brass, tarnish and patience",
+        "inLanguage": "en",
+        "contentSize": "26.6 KB",
+        "embedUrl": "https://podcast.example/embed/lantern-hours/05.html"
+      }
+    },
+    "signup": {
+      "isAccessibleForFree": false,
+      "url": "https://podcast.example/shows/lantern-hours/12-bonus-listener-mailbag.html",
+      "image": "https://podcast.example/covers/lantern-hours.svg",
+      "description": "Ines and Pell answer listeners' repair questions. Free with a sign-up to the Lantern Hours Letter.",
+      "audio": {
+        "@id": "https://podcast.example/shows/lantern-hours/12-bonus-listener-mailbag.html#audio"
+      },
+      "mainEntityOfPage": {
+        "@id": "https://podcast.example/shows/lantern-hours/12-bonus-listener-mailbag.html"
+      },
+      "partOfSeries": {
+        "@type": "PodcastSeries",
+        "name": "Lantern Hours",
+        "@id": "https://podcast.example/shows/lantern-hours.html#series",
+        "url": "https://podcast.example/shows/lantern-hours.html"
+      },
+      "potentialAction": [
+        {
+          "actionAccessibilityRequirement": {
+            "expectsAcceptanceOf": {
+              "name": "Lantern Hours Letter",
+              "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-letter",
+              "priceCurrency": "USD",
+              "price": 0,
+              "availability": "https://schema.org/InStock",
+              "priceSpecification": {
+                "priceCurrency": "USD",
+                "@type": "UnitPriceSpecification",
+                "price": 0,
+                "billingDuration": "P1M"
+              },
+              "@type": "Offer"
+            },
+            "requiresSubscription": {
+              "description": "A free sign-up: a monthly email, and the bonus episodes that come with it.",
+              "expectsAcceptanceOf": {
+                "name": "Lantern Hours Letter",
+                "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-letter",
+                "priceCurrency": "USD",
+                "price": 0,
+                "availability": "https://schema.org/InStock",
+                "priceSpecification": {
+                  "priceCurrency": "USD",
+                  "@type": "UnitPriceSpecification",
+                  "price": 0,
+                  "billingDuration": "P1M"
+                },
+                "@type": "Offer"
+              },
+              "@type": "MediaSubscription",
+              "@id": "https://podcast.example/subscribe/lantern-hours.html#lantern-letter",
+              "authenticator": {
+                "@type": "Organization",
+                "name": "Brackwater Audio",
+                "@id": "https://podcast.example/#organization",
+                "url": "https://podcast.example/"
+              },
+              "name": "Lantern Hours Letter"
+            },
+            "@type": "ActionAccessSpecification",
+            "category": "login"
+          },
+          "name": "Listen",
+          "@id": "https://podcast.example/shows/lantern-hours/12-bonus-listener-mailbag.html#listen",
+          "@type": "ListenAction",
+          "target": {
+            "actionPlatform": [
+              "https://schema.org/DesktopWebPlatform",
+              "https://schema.org/MobileWebPlatform"
+            ],
+            "@type": "EntryPoint",
+            "urlTemplate": "https://podcast.example/shows/lantern-hours/12-bonus-listener-mailbag.html#player"
+          },
+          "nxis:reportToken": "tok.listen"
+        },
+        {
+          "name": "Subscribe to Lantern Hours",
+          "@id": "https://podcast.example/shows/lantern-hours.html#subscribe",
+          "@type": "SubscribeAction",
+          "target": {
+            "actionPlatform": [
+              "https://schema.org/DesktopWebPlatform",
+              "https://schema.org/MobileWebPlatform"
+            ],
+            "@type": "EntryPoint",
+            "urlTemplate": "https://podcast.example/subscribe/lantern-hours.html"
+          },
+          "nxis:reportToken": "tok.subscribe"
+        }
+      ],
+      "episodeNumber": 12,
+      "publisher": {
+        "@type": "Organization",
+        "name": "Brackwater Audio",
+        "@id": "https://podcast.example/#organization",
+        "url": "https://podcast.example/"
+      },
+      "@type": "PodcastEpisode",
+      "datePublished": "2026-09-21",
+      "duration": "PT9S",
+      "author": [
+        {
+          "@type": "Person",
+          "name": "Ines Marlowe-Okafor"
+        },
+        {
+          "@type": "Person",
+          "name": "Pell Ruskin"
+        }
+      ],
+      "name": "Bonus: the listener mailbag",
+      "inLanguage": "en",
+      "@id": "https://podcast.example/shows/lantern-hours/12-bonus-listener-mailbag.html#episode",
+      "associatedMedia": {
+        "duration": "PT9S",
+        "isAccessibleForFree": false,
+        "contentSize": "27.6 KB",
+        "requiresSubscription": {
+          "description": "A free sign-up: a monthly email, and the bonus episodes that come with it.",
+          "expectsAcceptanceOf": {
+            "name": "Lantern Hours Letter",
+            "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-letter",
+            "priceCurrency": "USD",
+            "price": 0,
+            "availability": "https://schema.org/InStock",
+            "priceSpecification": {
+              "priceCurrency": "USD",
+              "@type": "UnitPriceSpecification",
+              "price": 0,
+              "billingDuration": "P1M"
+            },
+            "@type": "Offer"
+          },
+          "@type": "MediaSubscription",
+          "@id": "https://podcast.example/subscribe/lantern-hours.html#lantern-letter",
+          "authenticator": {
+            "@type": "Organization",
+            "name": "Brackwater Audio",
+            "@id": "https://podcast.example/#organization",
+            "url": "https://podcast.example/"
+          },
+          "name": "Lantern Hours Letter"
+        },
+        "transcript": "Lantern Hours, bonus episode. The listener mailbag. Your questions this month: a wobbly stool, a stuck lid, and a very old radio.",
+        "uploadDate": "2026-09-21",
+        "@type": "AudioObject",
+        "contentUrl": "https://podcast.example/audio/lantern-hours/12.mp3",
+        "encodingFormat": "audio/mpeg",
+        "@id": "https://podcast.example/shows/lantern-hours/12-bonus-listener-mailbag.html#audio",
+        "name": "Bonus: the listener mailbag",
+        "inLanguage": "en"
+      }
+    },
+    "tidecount": {
+      "@type": "PodcastEpisode",
+      "@id": "https://podcast.example/shows/tidecount/01-counting-herons-at-dawn.html#episode",
+      "url": "https://podcast.example/shows/tidecount/01-counting-herons-at-dawn.html",
+      "name": "Counting herons at dawn",
+      "description": "Grey shapes on the mudflat, and how to count birds that refuse to stand still.",
+      "episodeNumber": 1,
+      "datePublished": "2026-08-05",
+      "duration": "PT9S",
+      "inLanguage": "en",
+      "isAccessibleForFree": true,
+      "author": [
+        {
+          "@type": "Person",
+          "name": "Wren Abernathy-Solis"
+        }
+      ],
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://podcast.example/#organization",
+        "name": "Brackwater Audio",
+        "url": "https://podcast.example/"
+      },
+      "image": "https://podcast.example/covers/tidecount.svg",
+      "partOfSeries": {
+        "@type": "PodcastSeries",
+        "@id": "https://podcast.example/shows/tidecount.html#series",
+        "name": "Tidecount",
+        "url": "https://podcast.example/shows/tidecount.html"
+      },
+      "associatedMedia": {
+        "@type": "AudioObject",
+        "@id": "https://podcast.example/shows/tidecount/01-counting-herons-at-dawn.html#audio",
+        "name": "Counting herons at dawn",
+        "contentUrl": "https://podcast.example/audio/tidecount/01.mp3",
+        "encodingFormat": "audio/mpeg",
+        "duration": "PT9S",
+        "contentSize": "27.4 KB",
+        "uploadDate": "2026-08-05",
+        "inLanguage": "en",
+        "transcript": "Tidecount, episode one. Counting herons at dawn. Count in groups of five, from left to right, and never count the one that just flew.",
+        "isAccessibleForFree": true,
+        "embedUrl": "https://podcast.example/embed/tidecount/01.html"
+      },
+      "audio": {
+        "@id": "https://podcast.example/shows/tidecount/01-counting-herons-at-dawn.html#audio"
+      },
+      "potentialAction": [
+        {
+          "@type": "ListenAction",
+          "@id": "https://podcast.example/shows/tidecount/01-counting-herons-at-dawn.html#listen",
+          "name": "Listen",
+          "object": {
+            "@id": "https://podcast.example/shows/tidecount/01-counting-herons-at-dawn.html#episode"
+          },
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://podcast.example/shows/tidecount/01-counting-herons-at-dawn.html#player",
+            "actionPlatform": [
+              "https://schema.org/DesktopWebPlatform",
+              "https://schema.org/MobileWebPlatform"
+            ]
+          },
+          "actionAccessibilityRequirement": {
+            "@type": "ActionAccessSpecification",
+            "category": "nologinrequired"
+          }
+        },
+        {
+          "@type": "SubscribeAction",
+          "@id": "https://podcast.example/shows/tidecount.html#subscribe",
+          "name": "Follow Tidecount",
+          "object": {
+            "@id": "https://podcast.example/shows/tidecount.html#series"
+          },
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://podcast.example/subscribe/tidecount.html",
+            "actionPlatform": [
+              "https://schema.org/DesktopWebPlatform",
+              "https://schema.org/MobileWebPlatform"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "series": {
+    "lantern-hours": {
+      "@type": "PodcastSeries",
+      "@id": "https://podcast.example/shows/lantern-hours.html#series",
+      "url": "https://podcast.example/shows/lantern-hours.html",
+      "name": "Lantern Hours",
+      "alternateName": "Small repairs for old things",
+      "description": "Two restorers talk through one small repair a week: a sticking drawer, a cracked binding, a lamp that flickers. The first three episodes are free; the rest are for supporters.",
+      "genre": "Crafts and repair",
+      "inLanguage": "en",
+      "startDate": "2026-07-06",
+      "image": "https://podcast.example/covers/lantern-hours.svg",
+      "author": [
+        {
+          "@type": "Person",
+          "name": "Ines Marlowe-Okafor"
+        },
+        {
+          "@type": "Person",
+          "name": "Pell Ruskin"
+        }
+      ],
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://podcast.example/#organization",
+        "name": "Brackwater Audio",
+        "url": "https://podcast.example/"
+      },
+      "hasPart": [
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/lantern-hours/01-why-old-things-break.html#episode",
+          "url": "https://podcast.example/shows/lantern-hours/01-why-old-things-break.html",
+          "name": "Why old things break where they do",
+          "episodeNumber": 1,
+          "datePublished": "2026-07-06",
+          "duration": "PT10S",
+          "isAccessibleForFree": true,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/lantern-hours/01-why-old-things-break.html#listen",
+            "name": "Listen",
+            "object": {
+              "@id": "https://podcast.example/shows/lantern-hours/01-why-old-things-break.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/lantern-hours/01-why-old-things-break.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "nologinrequired"
+            }
+          }
+        },
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/lantern-hours/02-the-drawer-that-sticks.html#episode",
+          "url": "https://podcast.example/shows/lantern-hours/02-the-drawer-that-sticks.html",
+          "name": "The drawer that sticks",
+          "episodeNumber": 2,
+          "datePublished": "2026-07-13",
+          "duration": "PT10S",
+          "isAccessibleForFree": true,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/lantern-hours/02-the-drawer-that-sticks.html#listen",
+            "name": "Listen",
+            "object": {
+              "@id": "https://podcast.example/shows/lantern-hours/02-the-drawer-that-sticks.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/lantern-hours/02-the-drawer-that-sticks.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "nologinrequired"
+            }
+          }
+        },
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/lantern-hours/03-glue-and-when-not-to.html#episode",
+          "url": "https://podcast.example/shows/lantern-hours/03-glue-and-when-not-to.html",
+          "name": "Glue, and when not to use it",
+          "episodeNumber": 3,
+          "datePublished": "2026-07-20",
+          "duration": "PT10S",
+          "isAccessibleForFree": true,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/lantern-hours/03-glue-and-when-not-to.html#listen",
+            "name": "Listen",
+            "object": {
+              "@id": "https://podcast.example/shows/lantern-hours/03-glue-and-when-not-to.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/lantern-hours/03-glue-and-when-not-to.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "nologinrequired"
+            }
+          }
+        },
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/lantern-hours/04-recaning-a-chair-seat.html#episode",
+          "url": "https://podcast.example/shows/lantern-hours/04-recaning-a-chair-seat.html",
+          "name": "Re-caning a chair seat",
+          "episodeNumber": 4,
+          "datePublished": "2026-07-27",
+          "duration": "PT11S",
+          "isAccessibleForFree": false,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/lantern-hours/04-recaning-a-chair-seat.html#listen",
+            "name": "Listen to the free preview",
+            "object": {
+              "@id": "https://podcast.example/shows/lantern-hours/04-recaning-a-chair-seat.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/lantern-hours/04-recaning-a-chair-seat.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "nologinrequired"
+            }
+          }
+        },
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/lantern-hours/05-brass-tarnish-patience.html#episode",
+          "url": "https://podcast.example/shows/lantern-hours/05-brass-tarnish-patience.html",
+          "name": "Brass, tarnish and patience",
+          "episodeNumber": 5,
+          "datePublished": "2026-08-03",
+          "duration": "PT9S",
+          "isAccessibleForFree": false,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/lantern-hours/05-brass-tarnish-patience.html#listen",
+            "name": "Listen",
+            "object": {
+              "@id": "https://podcast.example/shows/lantern-hours/05-brass-tarnish-patience.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/lantern-hours/05-brass-tarnish-patience.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "subscription",
+              "requiresSubscription": {
+                "@type": "MediaSubscription",
+                "@id": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                "name": "Lantern Hours Supporters",
+                "description": "Every Lantern Hours episode, ad-free, plus the archive.",
+                "authenticator": {
+                  "@type": "Organization",
+                  "@id": "https://podcast.example/#organization",
+                  "name": "Brackwater Audio",
+                  "url": "https://podcast.example/"
+                },
+                "expectsAcceptanceOf": {
+                  "@type": "Offer",
+                  "name": "Lantern Hours Supporters",
+                  "price": 5,
+                  "priceCurrency": "USD",
+                  "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                  "availability": "https://schema.org/InStock",
+                  "priceSpecification": {
+                    "@type": "UnitPriceSpecification",
+                    "price": 5,
+                    "priceCurrency": "USD",
+                    "billingDuration": "P1M"
+                  }
+                }
+              },
+              "expectsAcceptanceOf": {
+                "@type": "Offer",
+                "name": "Lantern Hours Supporters",
+                "price": 5,
+                "priceCurrency": "USD",
+                "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                "availability": "https://schema.org/InStock",
+                "priceSpecification": {
+                  "@type": "UnitPriceSpecification",
+                  "price": 5,
+                  "priceCurrency": "USD",
+                  "billingDuration": "P1M"
+                }
+              }
+            }
+          }
+        },
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/lantern-hours/06-clock-springs-safely.html#episode",
+          "url": "https://podcast.example/shows/lantern-hours/06-clock-springs-safely.html",
+          "name": "Clock springs, safely",
+          "episodeNumber": 6,
+          "datePublished": "2026-08-10",
+          "duration": "PT10S",
+          "isAccessibleForFree": false,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/lantern-hours/06-clock-springs-safely.html#listen",
+            "name": "Listen",
+            "object": {
+              "@id": "https://podcast.example/shows/lantern-hours/06-clock-springs-safely.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/lantern-hours/06-clock-springs-safely.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "subscription",
+              "requiresSubscription": {
+                "@type": "MediaSubscription",
+                "@id": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                "name": "Lantern Hours Supporters",
+                "description": "Every Lantern Hours episode, ad-free, plus the archive.",
+                "authenticator": {
+                  "@type": "Organization",
+                  "@id": "https://podcast.example/#organization",
+                  "name": "Brackwater Audio",
+                  "url": "https://podcast.example/"
+                },
+                "expectsAcceptanceOf": {
+                  "@type": "Offer",
+                  "name": "Lantern Hours Supporters",
+                  "price": 5,
+                  "priceCurrency": "USD",
+                  "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                  "availability": "https://schema.org/InStock",
+                  "priceSpecification": {
+                    "@type": "UnitPriceSpecification",
+                    "price": 5,
+                    "priceCurrency": "USD",
+                    "billingDuration": "P1M"
+                  }
+                }
+              },
+              "expectsAcceptanceOf": {
+                "@type": "Offer",
+                "name": "Lantern Hours Supporters",
+                "price": 5,
+                "priceCurrency": "USD",
+                "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                "availability": "https://schema.org/InStock",
+                "priceSpecification": {
+                  "@type": "UnitPriceSpecification",
+                  "price": 5,
+                  "priceCurrency": "USD",
+                  "billingDuration": "P1M"
+                }
+              }
+            }
+          }
+        },
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/lantern-hours/07-patching-a-quilt.html#episode",
+          "url": "https://podcast.example/shows/lantern-hours/07-patching-a-quilt.html",
+          "name": "Patching a quilt without hiding it",
+          "episodeNumber": 7,
+          "datePublished": "2026-08-17",
+          "duration": "PT9S",
+          "isAccessibleForFree": false,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/lantern-hours/07-patching-a-quilt.html#listen",
+            "name": "Listen",
+            "object": {
+              "@id": "https://podcast.example/shows/lantern-hours/07-patching-a-quilt.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/lantern-hours/07-patching-a-quilt.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "subscription",
+              "requiresSubscription": {
+                "@type": "MediaSubscription",
+                "@id": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                "name": "Lantern Hours Supporters",
+                "description": "Every Lantern Hours episode, ad-free, plus the archive.",
+                "authenticator": {
+                  "@type": "Organization",
+                  "@id": "https://podcast.example/#organization",
+                  "name": "Brackwater Audio",
+                  "url": "https://podcast.example/"
+                },
+                "expectsAcceptanceOf": {
+                  "@type": "Offer",
+                  "name": "Lantern Hours Supporters",
+                  "price": 5,
+                  "priceCurrency": "USD",
+                  "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                  "availability": "https://schema.org/InStock",
+                  "priceSpecification": {
+                    "@type": "UnitPriceSpecification",
+                    "price": 5,
+                    "priceCurrency": "USD",
+                    "billingDuration": "P1M"
+                  }
+                }
+              },
+              "expectsAcceptanceOf": {
+                "@type": "Offer",
+                "name": "Lantern Hours Supporters",
+                "price": 5,
+                "priceCurrency": "USD",
+                "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                "availability": "https://schema.org/InStock",
+                "priceSpecification": {
+                  "@type": "UnitPriceSpecification",
+                  "price": 5,
+                  "priceCurrency": "USD",
+                  "billingDuration": "P1M"
+                }
+              }
+            }
+          }
+        },
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/lantern-hours/08-lamp-rewiring-basics.html#episode",
+          "url": "https://podcast.example/shows/lantern-hours/08-lamp-rewiring-basics.html",
+          "name": "Lamp rewiring basics",
+          "episodeNumber": 8,
+          "datePublished": "2026-08-24",
+          "duration": "PT10S",
+          "isAccessibleForFree": false,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/lantern-hours/08-lamp-rewiring-basics.html#listen",
+            "name": "Listen",
+            "object": {
+              "@id": "https://podcast.example/shows/lantern-hours/08-lamp-rewiring-basics.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/lantern-hours/08-lamp-rewiring-basics.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "subscription",
+              "requiresSubscription": {
+                "@type": "MediaSubscription",
+                "@id": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                "name": "Lantern Hours Supporters",
+                "description": "Every Lantern Hours episode, ad-free, plus the archive.",
+                "authenticator": {
+                  "@type": "Organization",
+                  "@id": "https://podcast.example/#organization",
+                  "name": "Brackwater Audio",
+                  "url": "https://podcast.example/"
+                },
+                "expectsAcceptanceOf": {
+                  "@type": "Offer",
+                  "name": "Lantern Hours Supporters",
+                  "price": 5,
+                  "priceCurrency": "USD",
+                  "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                  "availability": "https://schema.org/InStock",
+                  "priceSpecification": {
+                    "@type": "UnitPriceSpecification",
+                    "price": 5,
+                    "priceCurrency": "USD",
+                    "billingDuration": "P1M"
+                  }
+                }
+              },
+              "expectsAcceptanceOf": {
+                "@type": "Offer",
+                "name": "Lantern Hours Supporters",
+                "price": 5,
+                "priceCurrency": "USD",
+                "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                "availability": "https://schema.org/InStock",
+                "priceSpecification": {
+                  "@type": "UnitPriceSpecification",
+                  "price": 5,
+                  "priceCurrency": "USD",
+                  "billingDuration": "P1M"
+                }
+              }
+            }
+          }
+        },
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/lantern-hours/09-leather-bindings-that-crack.html#episode",
+          "url": "https://podcast.example/shows/lantern-hours/09-leather-bindings-that-crack.html",
+          "name": "Leather bindings that crack",
+          "episodeNumber": 9,
+          "datePublished": "2026-08-31",
+          "duration": "PT9S",
+          "isAccessibleForFree": false,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/lantern-hours/09-leather-bindings-that-crack.html#listen",
+            "name": "Listen",
+            "object": {
+              "@id": "https://podcast.example/shows/lantern-hours/09-leather-bindings-that-crack.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/lantern-hours/09-leather-bindings-that-crack.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "subscription",
+              "requiresSubscription": {
+                "@type": "MediaSubscription",
+                "@id": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                "name": "Lantern Hours Supporters",
+                "description": "Every Lantern Hours episode, ad-free, plus the archive.",
+                "authenticator": {
+                  "@type": "Organization",
+                  "@id": "https://podcast.example/#organization",
+                  "name": "Brackwater Audio",
+                  "url": "https://podcast.example/"
+                },
+                "expectsAcceptanceOf": {
+                  "@type": "Offer",
+                  "name": "Lantern Hours Supporters",
+                  "price": 5,
+                  "priceCurrency": "USD",
+                  "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                  "availability": "https://schema.org/InStock",
+                  "priceSpecification": {
+                    "@type": "UnitPriceSpecification",
+                    "price": 5,
+                    "priceCurrency": "USD",
+                    "billingDuration": "P1M"
+                  }
+                }
+              },
+              "expectsAcceptanceOf": {
+                "@type": "Offer",
+                "name": "Lantern Hours Supporters",
+                "price": 5,
+                "priceCurrency": "USD",
+                "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                "availability": "https://schema.org/InStock",
+                "priceSpecification": {
+                  "@type": "UnitPriceSpecification",
+                  "price": 5,
+                  "priceCurrency": "USD",
+                  "billingDuration": "P1M"
+                }
+              }
+            }
+          }
+        },
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/lantern-hours/10-enamel-chips-on-cast-iron.html#episode",
+          "url": "https://podcast.example/shows/lantern-hours/10-enamel-chips-on-cast-iron.html",
+          "name": "Enamel chips on cast iron",
+          "episodeNumber": 10,
+          "datePublished": "2026-09-07",
+          "duration": "PT11S",
+          "isAccessibleForFree": false,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/lantern-hours/10-enamel-chips-on-cast-iron.html#listen",
+            "name": "Listen",
+            "object": {
+              "@id": "https://podcast.example/shows/lantern-hours/10-enamel-chips-on-cast-iron.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/lantern-hours/10-enamel-chips-on-cast-iron.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "subscription",
+              "requiresSubscription": {
+                "@type": "MediaSubscription",
+                "@id": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                "name": "Lantern Hours Supporters",
+                "description": "Every Lantern Hours episode, ad-free, plus the archive.",
+                "authenticator": {
+                  "@type": "Organization",
+                  "@id": "https://podcast.example/#organization",
+                  "name": "Brackwater Audio",
+                  "url": "https://podcast.example/"
+                },
+                "expectsAcceptanceOf": {
+                  "@type": "Offer",
+                  "name": "Lantern Hours Supporters",
+                  "price": 5,
+                  "priceCurrency": "USD",
+                  "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                  "availability": "https://schema.org/InStock",
+                  "priceSpecification": {
+                    "@type": "UnitPriceSpecification",
+                    "price": 5,
+                    "priceCurrency": "USD",
+                    "billingDuration": "P1M"
+                  }
+                }
+              },
+              "expectsAcceptanceOf": {
+                "@type": "Offer",
+                "name": "Lantern Hours Supporters",
+                "price": 5,
+                "priceCurrency": "USD",
+                "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                "availability": "https://schema.org/InStock",
+                "priceSpecification": {
+                  "@type": "UnitPriceSpecification",
+                  "price": 5,
+                  "priceCurrency": "USD",
+                  "billingDuration": "P1M"
+                }
+              }
+            }
+          }
+        },
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/lantern-hours/11-window-sash-cords.html#episode",
+          "url": "https://podcast.example/shows/lantern-hours/11-window-sash-cords.html",
+          "name": "Window sash cords",
+          "episodeNumber": 11,
+          "datePublished": "2026-09-14",
+          "duration": "PT9S",
+          "isAccessibleForFree": false,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/lantern-hours/11-window-sash-cords.html#listen",
+            "name": "Listen",
+            "object": {
+              "@id": "https://podcast.example/shows/lantern-hours/11-window-sash-cords.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/lantern-hours/11-window-sash-cords.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "subscription",
+              "requiresSubscription": {
+                "@type": "MediaSubscription",
+                "@id": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                "name": "Lantern Hours Supporters",
+                "description": "Every Lantern Hours episode, ad-free, plus the archive.",
+                "authenticator": {
+                  "@type": "Organization",
+                  "@id": "https://podcast.example/#organization",
+                  "name": "Brackwater Audio",
+                  "url": "https://podcast.example/"
+                },
+                "expectsAcceptanceOf": {
+                  "@type": "Offer",
+                  "name": "Lantern Hours Supporters",
+                  "price": 5,
+                  "priceCurrency": "USD",
+                  "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                  "availability": "https://schema.org/InStock",
+                  "priceSpecification": {
+                    "@type": "UnitPriceSpecification",
+                    "price": 5,
+                    "priceCurrency": "USD",
+                    "billingDuration": "P1M"
+                  }
+                }
+              },
+              "expectsAcceptanceOf": {
+                "@type": "Offer",
+                "name": "Lantern Hours Supporters",
+                "price": 5,
+                "priceCurrency": "USD",
+                "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+                "availability": "https://schema.org/InStock",
+                "priceSpecification": {
+                  "@type": "UnitPriceSpecification",
+                  "price": 5,
+                  "priceCurrency": "USD",
+                  "billingDuration": "P1M"
+                }
+              }
+            }
+          }
+        },
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/lantern-hours/12-bonus-listener-mailbag.html#episode",
+          "url": "https://podcast.example/shows/lantern-hours/12-bonus-listener-mailbag.html",
+          "name": "Bonus: the listener mailbag",
+          "episodeNumber": 12,
+          "datePublished": "2026-09-21",
+          "duration": "PT9S",
+          "isAccessibleForFree": false,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/lantern-hours/12-bonus-listener-mailbag.html#listen",
+            "name": "Listen",
+            "object": {
+              "@id": "https://podcast.example/shows/lantern-hours/12-bonus-listener-mailbag.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/lantern-hours/12-bonus-listener-mailbag.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "login",
+              "requiresSubscription": {
+                "@type": "MediaSubscription",
+                "@id": "https://podcast.example/subscribe/lantern-hours.html#lantern-letter",
+                "name": "Lantern Hours Letter",
+                "description": "A free sign-up: a monthly email, and the bonus episodes that come with it.",
+                "authenticator": {
+                  "@type": "Organization",
+                  "@id": "https://podcast.example/#organization",
+                  "name": "Brackwater Audio",
+                  "url": "https://podcast.example/"
+                },
+                "expectsAcceptanceOf": {
+                  "@type": "Offer",
+                  "name": "Lantern Hours Letter",
+                  "price": 0,
+                  "priceCurrency": "USD",
+                  "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-letter",
+                  "availability": "https://schema.org/InStock",
+                  "priceSpecification": {
+                    "@type": "UnitPriceSpecification",
+                    "price": 0,
+                    "priceCurrency": "USD",
+                    "billingDuration": "P1M"
+                  }
+                }
+              },
+              "expectsAcceptanceOf": {
+                "@type": "Offer",
+                "name": "Lantern Hours Letter",
+                "price": 0,
+                "priceCurrency": "USD",
+                "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-letter",
+                "availability": "https://schema.org/InStock",
+                "priceSpecification": {
+                  "@type": "UnitPriceSpecification",
+                  "price": 0,
+                  "priceCurrency": "USD",
+                  "billingDuration": "P1M"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "potentialAction": [
+        {
+          "@type": "ListenAction",
+          "@id": "https://podcast.example/shows/lantern-hours/01-why-old-things-break.html#listen",
+          "name": "Listen",
+          "object": {
+            "@id": "https://podcast.example/shows/lantern-hours/01-why-old-things-break.html#episode"
+          },
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://podcast.example/shows/lantern-hours/01-why-old-things-break.html#player",
+            "actionPlatform": [
+              "https://schema.org/DesktopWebPlatform",
+              "https://schema.org/MobileWebPlatform"
+            ]
+          },
+          "actionAccessibilityRequirement": {
+            "@type": "ActionAccessSpecification",
+            "category": "nologinrequired"
+          }
+        },
+        {
+          "@type": "SubscribeAction",
+          "@id": "https://podcast.example/shows/lantern-hours.html#subscribe",
+          "name": "Subscribe to Lantern Hours",
+          "object": {
+            "@id": "https://podcast.example/shows/lantern-hours.html#series"
+          },
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://podcast.example/subscribe/lantern-hours.html",
+            "actionPlatform": [
+              "https://schema.org/DesktopWebPlatform",
+              "https://schema.org/MobileWebPlatform"
+            ]
+          }
+        }
+      ],
+      "webFeed": "https://podcast.example/feeds/lantern-hours.xml",
+      "offers": {
+        "@type": "Offer",
+        "name": "Lantern Hours Supporters",
+        "price": 5,
+        "priceCurrency": "USD",
+        "url": "https://podcast.example/subscribe/lantern-hours.html#lantern-supporters",
+        "availability": "https://schema.org/InStock",
+        "priceSpecification": {
+          "@type": "UnitPriceSpecification",
+          "price": 5,
+          "priceCurrency": "USD",
+          "billingDuration": "P1M"
+        }
+      }
+    },
+    "margin-notes": {
+      "@type": "PodcastSeries",
+      "@id": "https://podcast.example/shows/margin-notes.html#series",
+      "url": "https://podcast.example/shows/margin-notes.html",
+      "name": "Margin Notes",
+      "alternateName": "Bookkeeping for tiny workshops",
+      "description": "Plain talk about prices, hours and paperwork for one-person workshops. Members only.",
+      "genre": "Small business",
+      "inLanguage": "en",
+      "startDate": "2026-09-01",
+      "image": "https://podcast.example/covers/margin-notes.svg",
+      "author": [
+        {
+          "@type": "Person",
+          "name": "Calloway Brandt-Nyx"
+        }
+      ],
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://podcast.example/#organization",
+        "name": "Brackwater Audio",
+        "url": "https://podcast.example/"
+      },
+      "hasPart": [
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/margin-notes/01-your-first-price-list.html#episode",
+          "url": "https://podcast.example/shows/margin-notes/01-your-first-price-list.html",
+          "name": "Your first price list",
+          "episodeNumber": 1,
+          "datePublished": "2026-09-01",
+          "duration": "PT9S",
+          "isAccessibleForFree": false,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/margin-notes/01-your-first-price-list.html#listen",
+            "name": "Listen",
+            "object": {
+              "@id": "https://podcast.example/shows/margin-notes/01-your-first-price-list.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/margin-notes/01-your-first-price-list.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "subscription",
+              "requiresSubscription": {
+                "@type": "MediaSubscription",
+                "@id": "https://podcast.example/subscribe/margin-notes.html#margin-members",
+                "name": "Margin Notes Membership",
+                "description": "Every Margin Notes episode and the worksheets that go with them.",
+                "authenticator": {
+                  "@type": "Organization",
+                  "@id": "https://podcast.example/#organization",
+                  "name": "Brackwater Audio",
+                  "url": "https://podcast.example/"
+                },
+                "expectsAcceptanceOf": {
+                  "@type": "Offer",
+                  "name": "Margin Notes Membership",
+                  "price": 3,
+                  "priceCurrency": "USD",
+                  "url": "https://podcast.example/subscribe/margin-notes.html#margin-members",
+                  "availability": "https://schema.org/InStock",
+                  "priceSpecification": {
+                    "@type": "UnitPriceSpecification",
+                    "price": 3,
+                    "priceCurrency": "USD",
+                    "billingDuration": "P1M"
+                  }
+                }
+              },
+              "expectsAcceptanceOf": {
+                "@type": "Offer",
+                "name": "Margin Notes Membership",
+                "price": 3,
+                "priceCurrency": "USD",
+                "url": "https://podcast.example/subscribe/margin-notes.html#margin-members",
+                "availability": "https://schema.org/InStock",
+                "priceSpecification": {
+                  "@type": "UnitPriceSpecification",
+                  "price": 3,
+                  "priceCurrency": "USD",
+                  "billingDuration": "P1M"
+                }
+              }
+            }
+          }
+        },
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/margin-notes/02-counting-unbilled-hours.html#episode",
+          "url": "https://podcast.example/shows/margin-notes/02-counting-unbilled-hours.html",
+          "name": "Counting the hours you didn't bill",
+          "episodeNumber": 2,
+          "datePublished": "2026-09-15",
+          "duration": "PT8S",
+          "isAccessibleForFree": false,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/margin-notes/02-counting-unbilled-hours.html#listen",
+            "name": "Listen",
+            "object": {
+              "@id": "https://podcast.example/shows/margin-notes/02-counting-unbilled-hours.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/margin-notes/02-counting-unbilled-hours.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "subscription",
+              "requiresSubscription": {
+                "@type": "MediaSubscription",
+                "@id": "https://podcast.example/subscribe/margin-notes.html#margin-members",
+                "name": "Margin Notes Membership",
+                "description": "Every Margin Notes episode and the worksheets that go with them.",
+                "authenticator": {
+                  "@type": "Organization",
+                  "@id": "https://podcast.example/#organization",
+                  "name": "Brackwater Audio",
+                  "url": "https://podcast.example/"
+                },
+                "expectsAcceptanceOf": {
+                  "@type": "Offer",
+                  "name": "Margin Notes Membership",
+                  "price": 3,
+                  "priceCurrency": "USD",
+                  "url": "https://podcast.example/subscribe/margin-notes.html#margin-members",
+                  "availability": "https://schema.org/InStock",
+                  "priceSpecification": {
+                    "@type": "UnitPriceSpecification",
+                    "price": 3,
+                    "priceCurrency": "USD",
+                    "billingDuration": "P1M"
+                  }
+                }
+              },
+              "expectsAcceptanceOf": {
+                "@type": "Offer",
+                "name": "Margin Notes Membership",
+                "price": 3,
+                "priceCurrency": "USD",
+                "url": "https://podcast.example/subscribe/margin-notes.html#margin-members",
+                "availability": "https://schema.org/InStock",
+                "priceSpecification": {
+                  "@type": "UnitPriceSpecification",
+                  "price": 3,
+                  "priceCurrency": "USD",
+                  "billingDuration": "P1M"
+                }
+              }
+            }
+          }
+        },
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/margin-notes/03-the-year-end-box.html#episode",
+          "url": "https://podcast.example/shows/margin-notes/03-the-year-end-box.html",
+          "name": "The year-end box",
+          "episodeNumber": 3,
+          "datePublished": "2026-09-29",
+          "duration": "PT7S",
+          "isAccessibleForFree": false,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/margin-notes/03-the-year-end-box.html#listen",
+            "name": "Listen",
+            "object": {
+              "@id": "https://podcast.example/shows/margin-notes/03-the-year-end-box.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/margin-notes/03-the-year-end-box.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "subscription",
+              "requiresSubscription": {
+                "@type": "MediaSubscription",
+                "@id": "https://podcast.example/subscribe/margin-notes.html#margin-members",
+                "name": "Margin Notes Membership",
+                "description": "Every Margin Notes episode and the worksheets that go with them.",
+                "authenticator": {
+                  "@type": "Organization",
+                  "@id": "https://podcast.example/#organization",
+                  "name": "Brackwater Audio",
+                  "url": "https://podcast.example/"
+                },
+                "expectsAcceptanceOf": {
+                  "@type": "Offer",
+                  "name": "Margin Notes Membership",
+                  "price": 3,
+                  "priceCurrency": "USD",
+                  "url": "https://podcast.example/subscribe/margin-notes.html#margin-members",
+                  "availability": "https://schema.org/InStock",
+                  "priceSpecification": {
+                    "@type": "UnitPriceSpecification",
+                    "price": 3,
+                    "priceCurrency": "USD",
+                    "billingDuration": "P1M"
+                  }
+                }
+              },
+              "expectsAcceptanceOf": {
+                "@type": "Offer",
+                "name": "Margin Notes Membership",
+                "price": 3,
+                "priceCurrency": "USD",
+                "url": "https://podcast.example/subscribe/margin-notes.html#margin-members",
+                "availability": "https://schema.org/InStock",
+                "priceSpecification": {
+                  "@type": "UnitPriceSpecification",
+                  "price": 3,
+                  "priceCurrency": "USD",
+                  "billingDuration": "P1M"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "potentialAction": [
+        {
+          "@type": "ListenAction",
+          "@id": "https://podcast.example/shows/margin-notes/03-the-year-end-box.html#listen",
+          "name": "Listen",
+          "object": {
+            "@id": "https://podcast.example/shows/margin-notes/03-the-year-end-box.html#episode"
+          },
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://podcast.example/shows/margin-notes/03-the-year-end-box.html#player",
+            "actionPlatform": [
+              "https://schema.org/DesktopWebPlatform",
+              "https://schema.org/MobileWebPlatform"
+            ]
+          },
+          "actionAccessibilityRequirement": {
+            "@type": "ActionAccessSpecification",
+            "category": "subscription",
+            "requiresSubscription": {
+              "@type": "MediaSubscription",
+              "@id": "https://podcast.example/subscribe/margin-notes.html#margin-members",
+              "name": "Margin Notes Membership",
+              "description": "Every Margin Notes episode and the worksheets that go with them.",
+              "authenticator": {
+                "@type": "Organization",
+                "@id": "https://podcast.example/#organization",
+                "name": "Brackwater Audio",
+                "url": "https://podcast.example/"
+              },
+              "expectsAcceptanceOf": {
+                "@type": "Offer",
+                "name": "Margin Notes Membership",
+                "price": 3,
+                "priceCurrency": "USD",
+                "url": "https://podcast.example/subscribe/margin-notes.html#margin-members",
+                "availability": "https://schema.org/InStock",
+                "priceSpecification": {
+                  "@type": "UnitPriceSpecification",
+                  "price": 3,
+                  "priceCurrency": "USD",
+                  "billingDuration": "P1M"
+                }
+              }
+            },
+            "expectsAcceptanceOf": {
+              "@type": "Offer",
+              "name": "Margin Notes Membership",
+              "price": 3,
+              "priceCurrency": "USD",
+              "url": "https://podcast.example/subscribe/margin-notes.html#margin-members",
+              "availability": "https://schema.org/InStock",
+              "priceSpecification": {
+                "@type": "UnitPriceSpecification",
+                "price": 3,
+                "priceCurrency": "USD",
+                "billingDuration": "P1M"
+              }
+            }
+          }
+        },
+        {
+          "@type": "SubscribeAction",
+          "@id": "https://podcast.example/shows/margin-notes.html#subscribe",
+          "name": "Subscribe to Margin Notes",
+          "object": {
+            "@id": "https://podcast.example/shows/margin-notes.html#series"
+          },
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://podcast.example/subscribe/margin-notes.html",
+            "actionPlatform": [
+              "https://schema.org/DesktopWebPlatform",
+              "https://schema.org/MobileWebPlatform"
+            ]
+          }
+        }
+      ],
+      "isAccessibleForFree": false,
+      "offers": {
+        "@type": "Offer",
+        "name": "Margin Notes Membership",
+        "price": 3,
+        "priceCurrency": "USD",
+        "url": "https://podcast.example/subscribe/margin-notes.html#margin-members",
+        "availability": "https://schema.org/InStock",
+        "priceSpecification": {
+          "@type": "UnitPriceSpecification",
+          "price": 3,
+          "priceCurrency": "USD",
+          "billingDuration": "P1M"
+        }
+      }
+    },
+    "tidecount": {
+      "@type": "PodcastSeries",
+      "@id": "https://podcast.example/shows/tidecount.html#series",
+      "url": "https://podcast.example/shows/tidecount.html",
+      "name": "Tidecount",
+      "alternateName": "A census of a small estuary",
+      "description": "Each episode, a volunteer counter walks the fictional Hollin Estuary at a different hour and counts what lives there. Every episode is free.",
+      "genre": "Nature",
+      "inLanguage": "en",
+      "startDate": "2026-08-05",
+      "image": "https://podcast.example/covers/tidecount.svg",
+      "author": [
+        {
+          "@type": "Person",
+          "name": "Wren Abernathy-Solis"
+        }
+      ],
+      "publisher": {
+        "@type": "Organization",
+        "@id": "https://podcast.example/#organization",
+        "name": "Brackwater Audio",
+        "url": "https://podcast.example/"
+      },
+      "hasPart": [
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/tidecount/01-counting-herons-at-dawn.html#episode",
+          "url": "https://podcast.example/shows/tidecount/01-counting-herons-at-dawn.html",
+          "name": "Counting herons at dawn",
+          "episodeNumber": 1,
+          "datePublished": "2026-08-05",
+          "duration": "PT9S",
+          "isAccessibleForFree": true,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/tidecount/01-counting-herons-at-dawn.html#listen",
+            "name": "Listen",
+            "object": {
+              "@id": "https://podcast.example/shows/tidecount/01-counting-herons-at-dawn.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/tidecount/01-counting-herons-at-dawn.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "nologinrequired"
+            }
+          }
+        },
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/tidecount/02-what-the-mudflat-keeps.html#episode",
+          "url": "https://podcast.example/shows/tidecount/02-what-the-mudflat-keeps.html",
+          "name": "What the mudflat keeps",
+          "episodeNumber": 2,
+          "datePublished": "2026-08-19",
+          "duration": "PT9S",
+          "isAccessibleForFree": true,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/tidecount/02-what-the-mudflat-keeps.html#listen",
+            "name": "Listen",
+            "object": {
+              "@id": "https://podcast.example/shows/tidecount/02-what-the-mudflat-keeps.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/tidecount/02-what-the-mudflat-keeps.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "nologinrequired"
+            }
+          }
+        },
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/tidecount/03-eelgrass-and-the-slow-tide.html#episode",
+          "url": "https://podcast.example/shows/tidecount/03-eelgrass-and-the-slow-tide.html",
+          "name": "Eelgrass and the slow tide",
+          "episodeNumber": 3,
+          "datePublished": "2026-09-02",
+          "duration": "PT9S",
+          "isAccessibleForFree": true,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/tidecount/03-eelgrass-and-the-slow-tide.html#listen",
+            "name": "Listen",
+            "object": {
+              "@id": "https://podcast.example/shows/tidecount/03-eelgrass-and-the-slow-tide.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/tidecount/03-eelgrass-and-the-slow-tide.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "nologinrequired"
+            }
+          }
+        },
+        {
+          "@type": "PodcastEpisode",
+          "@id": "https://podcast.example/shows/tidecount/04-the-night-census.html#episode",
+          "url": "https://podcast.example/shows/tidecount/04-the-night-census.html",
+          "name": "The night census",
+          "episodeNumber": 4,
+          "datePublished": "2026-09-16",
+          "duration": "PT9S",
+          "isAccessibleForFree": true,
+          "potentialAction": {
+            "@type": "ListenAction",
+            "@id": "https://podcast.example/shows/tidecount/04-the-night-census.html#listen",
+            "name": "Listen",
+            "object": {
+              "@id": "https://podcast.example/shows/tidecount/04-the-night-census.html#episode"
+            },
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://podcast.example/shows/tidecount/04-the-night-census.html#player",
+              "actionPlatform": [
+                "https://schema.org/DesktopWebPlatform",
+                "https://schema.org/MobileWebPlatform"
+              ]
+            },
+            "actionAccessibilityRequirement": {
+              "@type": "ActionAccessSpecification",
+              "category": "nologinrequired"
+            }
+          }
+        }
+      ],
+      "potentialAction": [
+        {
+          "@type": "ListenAction",
+          "@id": "https://podcast.example/shows/tidecount/01-counting-herons-at-dawn.html#listen",
+          "name": "Listen",
+          "object": {
+            "@id": "https://podcast.example/shows/tidecount/01-counting-herons-at-dawn.html#episode"
+          },
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://podcast.example/shows/tidecount/01-counting-herons-at-dawn.html#player",
+            "actionPlatform": [
+              "https://schema.org/DesktopWebPlatform",
+              "https://schema.org/MobileWebPlatform"
+            ]
+          },
+          "actionAccessibilityRequirement": {
+            "@type": "ActionAccessSpecification",
+            "category": "nologinrequired"
+          }
+        },
+        {
+          "@type": "SubscribeAction",
+          "@id": "https://podcast.example/shows/tidecount.html#subscribe",
+          "name": "Follow Tidecount",
+          "object": {
+            "@id": "https://podcast.example/shows/tidecount.html#series"
+          },
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://podcast.example/subscribe/tidecount.html",
+            "actionPlatform": [
+              "https://schema.org/DesktopWebPlatform",
+              "https://schema.org/MobileWebPlatform"
+            ]
+          }
+        }
+      ],
+      "webFeed": "https://podcast.example/feeds/tidecount.xml",
+      "isAccessibleForFree": true
+    }
+  },
+  "_source": "Brackwater Audio, the podcast example: episodes as the local hub's nxis_query returns them (except episodes.tidecount, as dist/shows/tidecount/01-counting-herons-at-dawn.html publishes it), series as dist/shows/<show>.html publishes them, parts in full. Report tokens replaced."
+}

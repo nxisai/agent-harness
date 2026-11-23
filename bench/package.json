@@ -1,0 +1,18 @@
+{
+  "name": "@nxisai/agent-harness-bench",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Runs the harness case suite against several models and scores the results.",
+  "scripts": {
+    "bench": "node runner/run.mjs",
+    "score": "node runner/score.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "dependencies": {
+    "playwright": "1.48.2"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

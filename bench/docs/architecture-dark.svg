@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" color="#B0BCCF" viewBox="0 0 900 400" role="img" aria-label="The runner types each case into the unmodified site in a real browser and reads back what rendered. The page's model calls to /api/agent are retargeted by the runner to the bench proxy, which checks the model allowlist and the Redis budget, forwards to Ollama for local models or to a vendor API, and writes every request and response to a transcript. Browser Gemma runs inside the page and skips the proxy. Tool calls go from the page to the site's own MCP server. The scorer reads the page state and the transcript and writes the report.">
+        <defs>
+          <marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+          </marker>
+          <marker id="abb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="#7CA6FF"/>
+          </marker>
+        </defs>
+
+        <!-- suite -->
+        <rect x="0" y="45" width="110" height="50" rx="9" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="55" y="66" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="currentColor">suite/*.mjs</text>
+        <text x="55" y="83" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".6">cases + checks</text>
+        <line x1="110" y1="70" x2="138" y2="70" stroke="currentColor" stroke-width="1.3" marker-end="url(#ab)"/>
+
+        <!-- runner -->
+        <rect x="140" y="40" width="160" height="60" rx="9" fill="none" stroke="#7CA6FF" stroke-width="1.5"/>
+        <text x="220" y="64" text-anchor="middle" font-family="Manrope,sans-serif" font-weight="700" font-size="12.5" fill="#7CA6FF">runner</text>
+        <text x="220" y="82" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".7">Playwright · run.mjs</text>
+
+        <line x1="300" y1="56" x2="368" y2="56" stroke="currentColor" stroke-width="1.3" marker-end="url(#ab)"/>
+        <text x="334" y="48" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".75">types</text>
+        <line x1="370" y1="86" x2="302" y2="86" stroke="currentColor" stroke-width="1.3" stroke-dasharray="4 4" marker-end="url(#ab)"/>
+        <text x="334" y="102" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".75">reads</text>
+
+        <!-- page under test -->
+        <rect x="370" y="20" width="240" height="152" rx="9" fill="none" stroke="currentColor" stroke-width="1.6"/>
+        <text x="386" y="40" font-family="Manrope,sans-serif" font-weight="700" font-size="12.5" fill="currentColor">site under test</text>
+        <text x="594" y="40" text-anchor="end" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".6">unmodified</text>
+        <rect x="386" y="52" width="208" height="46" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+        <text x="490" y="71" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="currentColor">harness</text>
+        <text x="490" y="87" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".6">tools · policy · cards</text>
+        <rect x="386" y="110" width="208" height="46" rx="7" fill="none" stroke="currentColor" stroke-width="1.2" stroke-dasharray="4 4"/>
+        <text x="490" y="129" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="currentColor">lane A · Gemma on WebGPU</text>
+        <text x="490" y="145" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".6">in the page, no proxy</text>
+
+        <!-- MCP server -->
+        <line x1="610" y1="72" x2="678" y2="72" stroke="currentColor" stroke-width="1.3" marker-end="url(#ab)"/>
+        <text x="644" y="64" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".75">tool calls</text>
+        <rect x="680" y="45" width="200" height="54" rx="9" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="780" y="67" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="currentColor">site's MCP server</text>
+        <text x="780" y="84" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".6">records and actions</text>
+
+        <!-- intercept -->
+        <line x1="440" y1="172" x2="440" y2="208" stroke="#7CA6FF" stroke-width="1.3" marker-end="url(#abb)"/>
+        <text x="450" y="194" font-family="Inter,sans-serif" font-size="10.5" fill="#7CA6FF">/api/agent, retargeted by the runner</text>
+
+        <!-- proxy -->
+        <rect x="370" y="210" width="240" height="90" rx="9" fill="none" stroke="#7CA6FF" stroke-width="1.5"/>
+        <text x="490" y="236" text-anchor="middle" font-family="Manrope,sans-serif" font-weight="700" font-size="12.5" fill="#7CA6FF">model proxy</text>
+        <text x="490" y="255" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".7">model named on X-Nxis-Model</text>
+        <text x="490" y="271" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".7">allowlist · budget · transcript</text>
+        <text x="490" y="287" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".55">127.0.0.1:4100</text>
+
+        <!-- lanes -->
+        <line x1="610" y1="230" x2="678" y2="230" stroke="currentColor" stroke-width="1.3" marker-end="url(#ab)"/>
+        <rect x="680" y="208" width="200" height="44" rx="9" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="780" y="226" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="currentColor">lane B · Ollama</text>
+        <text x="780" y="242" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".6">local models, in Docker</text>
+        <line x1="610" y1="282" x2="678" y2="282" stroke="currentColor" stroke-width="1.3" marker-end="url(#ab)"/>
+        <rect x="680" y="260" width="200" height="44" rx="9" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="780" y="278" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="currentColor">lane C · vendor APIs</text>
+        <text x="780" y="294" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".6">Anthropic · OpenAI · Google</text>
+
+        <!-- redis -->
+        <path d="M 580 300 L 580 362 L 678 362" stroke="currentColor" stroke-width="1.3" fill="none" marker-end="url(#ab)"/>
+        <rect x="680" y="340" width="200" height="44" rx="9" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="780" y="358" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="currentColor">redis</text>
+        <text x="780" y="374" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".6">requests per minute, shared</text>
+
+        <!-- transcript -->
+        <line x1="450" y1="300" x2="450" y2="338" stroke="currentColor" stroke-width="1.3" marker-end="url(#ab)"/>
+        <rect x="370" y="340" width="170" height="44" rx="9" fill="none" stroke="currentColor" stroke-width="1.3"/>
+        <text x="455" y="358" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" fill="currentColor">runs/&lt;id&gt;/&lt;model&gt;.jsonl</text>
+        <text x="455" y="374" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".6">every request and response</text>
+
+        <!-- scoring -->
+        <line x1="220" y1="100" x2="220" y2="338" stroke="currentColor" stroke-width="1.3" stroke-dasharray="4 4" marker-end="url(#ab)"/>
+        <text x="230" y="224" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".75">page state</text>
+        <line x1="370" y1="362" x2="302" y2="362" stroke="currentColor" stroke-width="1.3" marker-end="url(#ab)"/>
+        <text x="336" y="354" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".75">calls</text>
+        <rect x="140" y="340" width="160" height="44" rx="9" fill="none" stroke="#7CA6FF" stroke-width="1.5"/>
+        <text x="220" y="358" text-anchor="middle" font-family="Manrope,sans-serif" font-weight="700" font-size="12" fill="#7CA6FF">report.md · .json</text>
+        <text x="220" y="374" text-anchor="middle" font-family="Inter,sans-serif" font-size="10.5" fill="currentColor" opacity=".7">checks · gate · cost</text>
+      </svg>

@@ -1,0 +1,109 @@
+{
+  "_source": "Synthetic media records for the in-chat media stories: every shape playable.ts reads. Addresses under media.example are made up; nothing here is fetched.",
+  "product": {
+    "@type": "Product",
+    "name": "Walnut drawer runner",
+    "image": [
+      "https://media.example/p/runner-1.jpg",
+      { "@type": "ImageObject", "contentUrl": "https://media.example/p/runner-2.jpg", "width": "640 px", "height": { "@type": "QuantitativeValue", "value": 480, "unitCode": "E37" }, "caption": "The runner, waxed" },
+      "https://media.example/p/runner-1.jpg",
+      "data:image/png;base64,iVBORw0KGgo="
+    ],
+    "thumbnailUrl": "https://media.example/p/runner-thumb.jpg"
+  },
+  "place": {
+    "@type": "Restaurant",
+    "name": "Copperline",
+    "photo": { "@type": "Photograph", "url": "https://media.example/place/front.jpg" },
+    "logo": "https://media.example/place/logo.png"
+  },
+  "productWithLogo": { "@type": "Product", "name": "Glue", "logo": "https://media.example/glue-logo.png" },
+  "imageObject": {
+    "@type": "ImageObject",
+    "@id": "https://media.example/photos/harbour#image",
+    "name": "Harbour at dusk",
+    "contentUrl": "https://media.example/photos/harbour.jpg",
+    "thumbnailUrl": "https://media.example/photos/harbour-thumb.jpg",
+    "width": 1600,
+    "height": "900",
+    "caption": "The estuary at low tide, looking east",
+    "creditText": "Photo: Wren Abernathy-Solis",
+    "copyrightHolder": { "@type": "Person", "name": "Brackwater Audio" },
+    "license": "https://creativecommons.org/licenses/by/4.0/",
+    "acquireLicensePage": "https://media.example/photos/license",
+    "url": "https://media.example/photos/harbour.html",
+    "isAccessibleForFree": true
+  },
+  "paidImage": {
+    "@type": "ImageObject",
+    "name": "Herons, full resolution",
+    "contentUrl": "https://media.example/photos/herons-full.jpg",
+    "thumbnailUrl": "https://media.example/photos/herons-thumb.jpg",
+    "isAccessibleForFree": false,
+    "author": { "@type": "Person", "name": "Pell Ruskin" }
+  },
+  "expandedImage": {
+    "@id": "https://media.example/photos/gulls#image",
+    "@type": ["http://schema.org/ImageObject"],
+    "http://schema.org/name": [{ "@value": "Gulls" }],
+    "http://schema.org/contentUrl": [{ "@value": "https://media.example/photos/gulls.jpg" }],
+    "http://schema.org/width": [{ "@value": 800 }],
+    "http://schema.org/height": [{ "@value": 600 }]
+  },
+  "freeVideo": {
+    "@type": "VideoObject",
+    "@id": "https://media.example/videos/tide#video",
+    "name": "The tide comes in",
+    "description": "Thirty seconds of the estuary filling.",
+    "contentUrl": "https://media.example/videos/tide.mp4",
+    "encodingFormat": "video/mp4",
+    "thumbnailUrl": "https://media.example/videos/tide-poster.jpg",
+    "duration": "PT30S",
+    "width": 1280,
+    "height": 720,
+    "isAccessibleForFree": true,
+    "uploadDate": "2026-08-01",
+    "caption": { "@type": "MediaObject", "contentUrl": "https://media.example/videos/tide.en.vtt", "encodingFormat": "text/vtt", "inLanguage": "en" },
+    "transcript": "Water over mud, then over the stones, then over the step.",
+    "url": "https://media.example/videos/tide.html"
+  },
+  "graphEpisode": {
+    "@graph": [
+      { "@id": "https://media.example/ep/7#audio", "@type": "AudioObject", "contentUrl": "https://media.example/ep/7.mp3", "encodingFormat": "audio/mpeg", "isAccessibleForFree": true },
+      { "@id": "https://media.example/ep/7#episode", "@type": "PodcastEpisode", "name": "Seven", "isAccessibleForFree": true, "audio": { "@id": "https://media.example/ep/7#audio" }, "url": "https://media.example/ep/7.html" }
+    ]
+  },
+  "encodings": {
+    "@type": "VideoObject",
+    "name": "Two encodings",
+    "isAccessibleForFree": true,
+    "url": "https://media.example/videos/two.html",
+    "encoding": [
+      { "@type": "MediaObject", "contentUrl": "https://media.example/videos/two.webm", "encodingFormat": "video/webm" },
+      { "@type": "MediaObject", "contentUrl": "https://media.example/videos/two.mp4", "encodingFormat": "video/mp4" },
+      { "@type": "MediaObject", "contentUrl": "https://media.example/videos/two.m3u8", "encodingFormat": "application/vnd.apple.mpegurl" },
+      { "@type": "MediaObject", "contentUrl": "https://media.example/videos/two.mpd", "encodingFormat": "application/dash+xml" }
+    ]
+  },
+  "trailer": {
+    "@type": "Movie",
+    "name": "Estuary",
+    "isAccessibleForFree": false,
+    "url": "https://media.example/films/estuary.html",
+    "trailer": { "@type": "VideoObject", "name": "Estuary (trailer)", "contentUrl": "https://media.example/films/estuary-trailer.mp4", "isAccessibleForFree": true }
+  },
+  "unmarked": { "@type": "AudioObject", "name": "No access markup", "contentUrl": "https://media.example/a/unmarked.mp3", "url": "https://media.example/a/unmarked.html" },
+  "expired": { "@type": "AudioObject", "name": "Gone", "contentUrl": "https://media.example/a/gone.mp3", "isAccessibleForFree": true, "expires": "2020-01-01" },
+  "embedOnly": { "@type": "VideoObject", "name": "Embed only", "embedUrl": "https://media.example/embed/1", "isAccessibleForFree": true, "url": "https://media.example/v/1.html" },
+  "hostile": [
+    "javascript:alert(1)",
+    "data:image/svg+xml,<svg/>",
+    "blob:https://media.example/1234",
+    "https://user:pass@media.example/a.jpg",
+    "https://media.example/{id}.jpg",
+    "http://media.example/a.jpg",
+    "//media.example/a.jpg",
+    "https://media.example/a b.jpg",
+    "ftp://media.example/a.jpg"
+  ]
+}

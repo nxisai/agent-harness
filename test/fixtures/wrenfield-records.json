@@ -1,0 +1,809 @@
+{
+ "_about": {
+  "source": "The Wrenfield events demo (wrenfield.example), published on the local stack, read 2026-11-16.",
+  "served": "Records as its MCP server returns them (nxis_get): form inputs and report tokens trimmed. The index splits an event page into one record per type and drops offers and location from most, so these are thin.",
+  "page": "The same events as their pages state them (the demo's data/events.json, venues.json, people.json) in schema.org, with the @ids the served corpus gives them. The ticket form is the served action in the shape the autofill runner records: nxis:targetKind selfPage and nxis:pageUrl beside nxis:observedUrl and nxis:bindingPending. validFrom is each pass's sale start. The demo has no cancelled, postponed or online-only event: tests derive those from these records by changing eventStatus or eventAttendanceMode."
+ },
+ "served": {
+  "festival": {
+   "name": "Field Days Denver",
+   "description": "A midsummer weekend in the rail yard at Railspur Pavilion, headlined by Nightjar Assembly and Odalys Brightwater.",
+   "potentialAction": {
+    "https://schema.org/description": "Select ticket quantities for weekend, single-day, or youth passes to attend Field Days Denver.",
+    "https://schema.org/target": {
+     "https://schema.org/encodingType": "application/x-www-form-urlencoded",
+     "https://nxis.ai/ns#bindingPending": true,
+     "@type": "https://schema.org/EntryPoint",
+     "https://nxis.ai/ns#observedUrl": "https://wrenfield.example/api/checkout",
+     "https://schema.org/httpMethod": "POST"
+    },
+    "https://schema.org/name": "pass-form",
+    "@type": "https://schema.org/InteractAction",
+    "https://nxis.ai/ns#fixedInput": {
+     "https://schema.org/valueName": "event",
+     "https://nxis.ai/ns#valueType": "string",
+     "@type": "https://schema.org/PropertyValueSpecification",
+     "https://schema.org/readonlyValue": true,
+     "https://schema.org/defaultValue": "field-days-denver-2027"
+    },
+    "@id": "urn:nxis:action:bbc076b7ca296e71033d851a65ee8a3a"
+   },
+   "previousStartDate": "2027-07-24T12:00:00-06:00",
+   "@type": "Festival",
+   "@context": "https://schema.org/",
+   "@id": "https://wrenfield.example/events/field-days-denver-2027#festival"
+  },
+  "festivalDates": {
+   "name": "Field Days Denver",
+   "endDate": "2027-07-25T22:00:00-06:00",
+   "description": "A midsummer weekend in the rail yard at Railspur Pavilion, headlined by Nightjar Assembly and Odalys Brightwater.",
+   "previousStartDate": "2027-07-24T12:00:00-06:00",
+   "@type": "MusicEvent",
+   "startDate": "2027-07-24T12:00:00-06:00",
+   "@context": "https://schema.org/",
+   "@id": "https://wrenfield.example/events/field-days-denver-2027#event"
+  },
+  "conference": {
+   "name": "Open Signal Denver",
+   "location": {
+    "address": {
+     "addressLocality": "Denver",
+     "addressRegion": "CO"
+    },
+    "name": "Railspur Pavilion"
+   },
+   "organizer": {
+    "address": {
+     "streetAddress": "212 Quillfeather Street, Suite 300",
+     "postalCode": "55401",
+     "addressLocality": "Minneapolis",
+     "addressRegion": "MN"
+    },
+    "name": "Wrenfield Events Co.",
+    "telephone": "(612) 555-0142"
+   },
+   "offers": {
+    "priceCurrency": "USD",
+    "price": "60",
+    "validFrom": "2027-06-01T00:00:00Z"
+   },
+   "@type": "ConferenceEvent",
+   "startDate": "2027-10-07",
+   "performer": {
+    "jobTitle": "Letterpress printer",
+    "name": "Tobias Lindqvist-Amara",
+    "url": "https://wrenfield.example/people/tobias-lindqvist-amara/"
+   },
+   "@context": "https://schema.org/",
+   "@id": "https://wrenfield.example/people/tobias-lindqvist-amara#event-13a8c989"
+  },
+  "supper": {
+   "name": "Night Table Savannah: Low Country, High Tide",
+   "description": "The season opens outdoors in Savannah with Marguerite Dossou-Finch cooking the Georgia coast.",
+   "potentialAction": {
+    "https://schema.org/description": "Select the quantity of supper seats or pairing passes to purchase for this event",
+    "https://schema.org/target": {
+     "https://schema.org/encodingType": "application/x-www-form-urlencoded",
+     "https://nxis.ai/ns#bindingPending": true,
+     "@type": "https://schema.org/EntryPoint",
+     "https://nxis.ai/ns#observedUrl": "https://wrenfield.example/api/checkout",
+     "https://schema.org/httpMethod": "POST"
+    },
+    "https://schema.org/name": "pass-form",
+    "@type": "https://schema.org/InteractAction",
+    "https://nxis.ai/ns#fixedInput": {
+     "https://schema.org/valueName": "event",
+     "https://nxis.ai/ns#valueType": "string",
+     "@type": "https://schema.org/PropertyValueSpecification",
+     "https://schema.org/readonlyValue": true,
+     "https://schema.org/defaultValue": "night-table-savannah-2027-03-20"
+    },
+    "@id": "urn:nxis:action:8a3e0d2f15cf0b6060400f9f99925cda"
+   },
+   "previousStartDate": "Night Table Savannah: Low Country, High Tide, Sat, Mar 20 | Wrenfield. Starts Saturday, March 20, 2027 at 7:00 PM. Ends Saturday, March 20, 2027 at 10:00 PM. Sold out. Venue: Saltbox Courtyard, 305 Heronquay Lane, Savannah, GA 31401. Organizer: Wrenfield. Passes from $135 to $185.",
+   "@type": "Event",
+   "@context": "https://schema.org/",
+   "@id": "https://wrenfield.example/events/night-table-savannah-2027-03-20#event"
+  },
+  "floating": {
+   "name": "Side Room Austin: Tamsin Roe",
+   "previousStartDate": "2027-03-05T21:00:00-06:00",
+   "@type": "Event",
+   "startDate": "2027-03-05T21:00:00",
+   "@context": "https://schema.org/",
+   "@id": "https://wrenfield.example/people/tamsin-roe#event"
+  },
+  "venue": {
+   "name": "Railspur Pavilion",
+   "event": {
+    "name": "Field Days Denver",
+    "endDate": "2027-07-25T22:00:00-06:00",
+    "url": "https://wrenfield.example/events/field-days-denver-2027/",
+    "@type": "Event",
+    "startDate": "2027-07-24T12:00:00-06:00"
+   },
+   "amenityFeature": [
+    {
+     "@type": "LocationFeatureSpecification",
+     "name": "Step-free entrance",
+     "value": true
+    },
+    {
+     "@type": "LocationFeatureSpecification",
+     "name": "Accessible restrooms",
+     "value": true
+    },
+    {
+     "@type": "LocationFeatureSpecification",
+     "name": "Assistive listening devices at the door",
+     "value": true
+    },
+    {
+     "@type": "LocationFeatureSpecification",
+     "name": "Service animals welcome",
+     "value": true
+    },
+    {
+     "@type": "LocationFeatureSpecification",
+     "name": "Compacted gravel in the yard; matting on main routes",
+     "value": true
+    },
+    {
+     "@type": "LocationFeatureSpecification",
+     "name": "Paid parking lot with 300 spaces next door, including 12 accessible spaces",
+     "value": true
+    }
+   ],
+   "address": {
+    "streetAddress": "2750 Cindertrack Street",
+    "addressLocality": "Denver",
+    "postalCode": "80205",
+    "@type": "PostalAddress",
+    "addressRegion": "CO"
+   },
+   "@type": "EventVenue",
+   "@context": "https://schema.org/",
+   "@id": "https://wrenfield.example/events/field-days-denver-2027#eventvenue"
+  }
+ },
+ "page": {
+  "festival": {
+   "@type": "Festival",
+   "@id": "https://wrenfield.example/events/field-days-denver-2027#festival",
+   "name": "Field Days Denver",
+   "description": "A midsummer weekend in the rail yard at Railspur Pavilion, headlined by Nightjar Assembly and Odalys Brightwater.",
+   "url": "https://wrenfield.example/events/field-days-denver-2027/",
+   "startDate": "2027-07-24T12:00-06:00",
+   "endDate": "2027-07-25T22:00-06:00",
+   "doorTime": "2027-07-24T12:00-06:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+   "location": {
+    "@type": "EventVenue",
+    "@id": "https://wrenfield.example/events/field-days-denver-2027#eventvenue",
+    "name": "Railspur Pavilion",
+    "url": "https://wrenfield.example/venues/railspur-pavilion/",
+    "address": {
+     "@type": "PostalAddress",
+     "streetAddress": "2750 Cindertrack Street",
+     "addressLocality": "Denver",
+     "addressRegion": "CO",
+     "postalCode": "80205",
+     "addressCountry": "US"
+    }
+   },
+   "organizer": {
+    "@type": "Organization",
+    "@id": "https://wrenfield.example/#organization/wrenfield-events-co",
+    "name": "Wrenfield Events Co.",
+    "url": "https://wrenfield.example/"
+   },
+   "performer": [
+    {
+     "@type": "PerformingGroup",
+     "name": "Nightjar Assembly",
+     "@id": "https://wrenfield.example/people/nightjar-assembly#musicgroup"
+    },
+    {
+     "@type": "Person",
+     "name": "Odalys Brightwater"
+    },
+    {
+     "@type": "PerformingGroup",
+     "name": "Paper Orchard"
+    },
+    {
+     "@type": "PerformingGroup",
+     "name": "Brass Meridian"
+    },
+    {
+     "@type": "PerformingGroup",
+     "name": "Sundial Arcade"
+    },
+    {
+     "@type": "Person",
+     "name": "Wilder Okafor"
+    },
+    {
+     "@type": "PerformingGroup",
+     "name": "Ilse Varga Trio"
+    },
+    {
+     "@type": "Person",
+     "name": "Tamsin Roe",
+     "@id": "https://wrenfield.example/people/tamsin-roe#person"
+    },
+    {
+     "@type": "PerformingGroup",
+     "name": "Rook & Lantern"
+    },
+    {
+     "@type": "PerformingGroup",
+     "name": "Kettle & Wire"
+    }
+   ],
+   "offers": [
+    {
+     "@type": "Offer",
+     "name": "Weekend Pass",
+     "price": 156,
+     "priceCurrency": "USD",
+     "validFrom": "2026-11-02T10:00-07:00",
+     "url": "https://wrenfield.example/events/field-days-denver-2027/#pass-weekend",
+     "availability": "https://schema.org/InStock"
+    },
+    {
+     "@type": "Offer",
+     "name": "Weekend Plus Pass",
+     "price": 278,
+     "priceCurrency": "USD",
+     "validFrom": "2026-11-02T10:00-07:00",
+     "url": "https://wrenfield.example/events/field-days-denver-2027/#pass-weekend-plus",
+     "availability": "https://schema.org/InStock"
+    },
+    {
+     "@type": "Offer",
+     "name": "Saturday Pass",
+     "price": 88,
+     "priceCurrency": "USD",
+     "validFrom": "2026-11-02T10:00-07:00",
+     "url": "https://wrenfield.example/events/field-days-denver-2027/#pass-saturday",
+     "availability": "https://schema.org/InStock"
+    },
+    {
+     "@type": "Offer",
+     "name": "Sunday Pass",
+     "price": 88,
+     "priceCurrency": "USD",
+     "validFrom": "2026-11-02T10:00-07:00",
+     "url": "https://wrenfield.example/events/field-days-denver-2027/#pass-sunday",
+     "availability": "https://schema.org/InStock"
+    },
+    {
+     "@type": "Offer",
+     "name": "Youth Weekend Pass",
+     "price": 48,
+     "priceCurrency": "USD",
+     "validFrom": "2026-11-02T10:00-07:00",
+     "url": "https://wrenfield.example/events/field-days-denver-2027/#pass-youth-weekend",
+     "availability": "https://schema.org/InStock"
+    }
+   ],
+   "subEvent": [
+    {
+     "@type": "MusicEvent",
+     "@id": "https://wrenfield.example/events/field-days-denver-2027#saturday",
+     "name": "Saturday",
+     "startDate": "2027-07-24T12:00-06:00",
+     "endDate": "2027-07-24T22:00-06:00",
+     "offers": {
+      "@type": "Offer",
+      "name": "Saturday Pass",
+      "price": 88,
+      "priceCurrency": "USD",
+      "validFrom": "2026-11-02T10:00-07:00",
+      "url": "https://wrenfield.example/events/field-days-denver-2027/#pass-saturday",
+      "availability": "https://schema.org/InStock"
+     }
+    },
+    {
+     "@type": "MusicEvent",
+     "@id": "https://wrenfield.example/events/field-days-denver-2027#sunday",
+     "name": "Sunday",
+     "startDate": "2027-07-25T12:00-06:00",
+     "endDate": "2027-07-25T22:00-06:00",
+     "offers": {
+      "@type": "Offer",
+      "name": "Sunday Pass",
+      "price": 88,
+      "priceCurrency": "USD",
+      "validFrom": "2026-11-02T10:00-07:00",
+      "url": "https://wrenfield.example/events/field-days-denver-2027/#pass-sunday",
+      "availability": "https://schema.org/InStock"
+     }
+    }
+   ],
+   "potentialAction": {
+    "https://schema.org/description": "Select ticket quantities for weekend, single-day, or youth passes to attend Field Days Denver.",
+    "https://schema.org/target": {
+     "https://schema.org/encodingType": "application/x-www-form-urlencoded",
+     "https://nxis.ai/ns#bindingPending": true,
+     "@type": "https://schema.org/EntryPoint",
+     "https://nxis.ai/ns#observedUrl": "https://wrenfield.example/api/checkout",
+     "https://schema.org/httpMethod": "POST",
+     "https://nxis.ai/ns#targetKind": "selfPage",
+     "https://nxis.ai/ns#pageUrl": "https://wrenfield.example/events/field-days-denver-2027/"
+    },
+    "https://schema.org/name": "pass-form",
+    "@type": "https://schema.org/InteractAction",
+    "https://nxis.ai/ns#fixedInput": {
+     "https://schema.org/valueName": "event",
+     "https://nxis.ai/ns#valueType": "string",
+     "@type": "https://schema.org/PropertyValueSpecification",
+     "https://schema.org/readonlyValue": true,
+     "https://schema.org/defaultValue": "field-days-denver-2027"
+    },
+    "@id": "urn:nxis:action:bbc076b7ca296e71033d851a65ee8a3a",
+    "https://nxis.ai/ns#reportToken": "tok.tickets"
+   }
+  },
+  "supper": {
+   "@type": "FoodEvent",
+   "@id": "https://wrenfield.example/events/night-table-savannah-2027-03-20#event",
+   "name": "Night Table Savannah: Low Country, High Tide",
+   "description": "The season opens outdoors in Savannah with Marguerite Dossou-Finch cooking the Georgia coast.",
+   "url": "https://wrenfield.example/events/night-table-savannah-2027-03-20/",
+   "startDate": "2027-03-20T19:00-04:00",
+   "endDate": "2027-03-20T22:00-04:00",
+   "doorTime": "2027-03-20T18:30-04:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+   "location": {
+    "@type": "EventVenue",
+    "@id": "https://wrenfield.example/events/night-table-savannah-2027-03-20#eventvenue",
+    "name": "Saltbox Courtyard",
+    "url": "https://wrenfield.example/venues/saltbox-courtyard/",
+    "address": {
+     "@type": "PostalAddress",
+     "streetAddress": "305 Heronquay Lane",
+     "addressLocality": "Savannah",
+     "addressRegion": "GA",
+     "postalCode": "31401",
+     "addressCountry": "US"
+    }
+   },
+   "organizer": {
+    "@type": "Organization",
+    "@id": "https://wrenfield.example/#organization/wrenfield-events-co",
+    "name": "Wrenfield Events Co.",
+    "url": "https://wrenfield.example/"
+   },
+   "performer": [
+    {
+     "@type": "Person",
+     "name": "Marguerite Dossou-Finch"
+    }
+   ],
+   "offers": [
+    {
+     "@type": "Offer",
+     "name": "Supper Seat",
+     "price": 135,
+     "priceCurrency": "USD",
+     "validFrom": "2026-11-02T10:00-05:00",
+     "url": "https://wrenfield.example/events/night-table-savannah-2027-03-20/#pass-seat",
+     "availability": "https://schema.org/SoldOut"
+    },
+    {
+     "@type": "Offer",
+     "name": "Supper Seat with Pairing",
+     "price": 185,
+     "priceCurrency": "USD",
+     "validFrom": "2026-11-02T10:00-05:00",
+     "url": "https://wrenfield.example/events/night-table-savannah-2027-03-20/#pass-seat-pairing",
+     "availability": "https://schema.org/SoldOut"
+    }
+   ],
+   "potentialAction": {
+    "https://schema.org/description": "Select the quantity of supper seats or pairing passes to purchase for this event",
+    "https://schema.org/target": {
+     "https://schema.org/encodingType": "application/x-www-form-urlencoded",
+     "https://nxis.ai/ns#bindingPending": true,
+     "@type": "https://schema.org/EntryPoint",
+     "https://nxis.ai/ns#observedUrl": "https://wrenfield.example/api/checkout",
+     "https://schema.org/httpMethod": "POST",
+     "https://nxis.ai/ns#targetKind": "selfPage",
+     "https://nxis.ai/ns#pageUrl": "https://wrenfield.example/events/night-table-savannah-2027-03-20/"
+    },
+    "https://schema.org/name": "pass-form",
+    "@type": "https://schema.org/InteractAction",
+    "https://nxis.ai/ns#fixedInput": {
+     "https://schema.org/valueName": "event",
+     "https://nxis.ai/ns#valueType": "string",
+     "@type": "https://schema.org/PropertyValueSpecification",
+     "https://schema.org/readonlyValue": true,
+     "https://schema.org/defaultValue": "night-table-savannah-2027-03-20"
+    },
+    "@id": "urn:nxis:action:8a3e0d2f15cf0b6060400f9f99925cda",
+    "https://nxis.ai/ns#reportToken": "tok.tickets"
+   }
+  },
+  "conference": {
+   "@type": "ConferenceEvent",
+   "@id": "https://wrenfield.example/events/open-signal-denver-2027#event",
+   "name": "Open Signal Denver",
+   "description": "The fall edition of Open Signal, at Railspur Pavilion. This year's theme: Made to Last.",
+   "url": "https://wrenfield.example/events/open-signal-denver-2027/",
+   "startDate": "2027-10-07T08:30-06:00",
+   "endDate": "2027-10-08T17:30-06:00",
+   "doorTime": "2027-10-07T08:30-06:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "eventAttendanceMode": "https://schema.org/MixedEventAttendanceMode",
+   "location": [
+    {
+     "@type": "EventVenue",
+     "@id": "https://wrenfield.example/venues/railspur-pavilion#eventvenue",
+     "name": "Railspur Pavilion",
+     "url": "https://wrenfield.example/venues/railspur-pavilion/",
+     "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "2750 Cindertrack Street",
+      "addressLocality": "Denver",
+      "addressRegion": "CO",
+      "postalCode": "80205",
+      "addressCountry": "US"
+     }
+    },
+    {
+     "@type": "VirtualLocation",
+     "url": "https://wrenfield.example/watch/"
+    }
+   ],
+   "organizer": {
+    "@type": "Organization",
+    "@id": "https://wrenfield.example/#organization/wrenfield-events-co",
+    "name": "Wrenfield Events Co.",
+    "url": "https://wrenfield.example/"
+   },
+   "performer": [
+    {
+     "@type": "Person",
+     "name": "Marisol Achterberg",
+     "@id": "https://wrenfield.example/people/marisol-achterberg#person"
+    },
+    {
+     "@type": "Person",
+     "name": "Ansel Dragomir"
+    },
+    {
+     "@type": "Person",
+     "name": "Jonah Fairweather-Reyes"
+    },
+    {
+     "@type": "Person",
+     "name": "Devika Ramaswamy-Cole"
+    },
+    {
+     "@type": "Person",
+     "name": "Adaeze Thornbury"
+    },
+    {
+     "@type": "Person",
+     "name": "Tobias Lindqvist-Amara",
+     "@id": "https://wrenfield.example/people/tobias-lindqvist-amara#person"
+    },
+    {
+     "@type": "Person",
+     "name": "Greta Solheim-Park"
+    },
+    {
+     "@type": "Person",
+     "name": "Imani Castellane"
+    },
+    {
+     "@type": "Person",
+     "name": "Lucian Abernathy-Osei",
+     "@id": "https://wrenfield.example/people/lucian-abernathy-osei#person"
+    },
+    {
+     "@type": "Person",
+     "name": "Noor Halloran",
+     "@id": "https://wrenfield.example/people/noor-halloran#person"
+    },
+    {
+     "@type": "Person",
+     "name": "Rafferty Okonkwo-Hale"
+    },
+    {
+     "@type": "Person",
+     "name": "Yuki Tanabe-Ross",
+     "@id": "https://wrenfield.example/people/yuki-tanabe-ross#person"
+    },
+    {
+     "@type": "Person",
+     "name": "Calder Whitlock-Ng"
+    }
+   ],
+   "offers": [
+    {
+     "@type": "Offer",
+     "name": "Two-Day Pass",
+     "price": 420,
+     "priceCurrency": "USD",
+     "validFrom": "2027-06-01T10:00-06:00",
+     "url": "https://wrenfield.example/events/open-signal-denver-2027/#pass-two-day",
+     "availability": "https://schema.org/InStock"
+    },
+    {
+     "@type": "Offer",
+     "name": "Two-Day Pass Plus Workshop",
+     "price": 560,
+     "priceCurrency": "USD",
+     "validFrom": "2027-06-01T10:00-06:00",
+     "url": "https://wrenfield.example/events/open-signal-denver-2027/#pass-two-day-plus",
+     "availability": "https://schema.org/InStock"
+    },
+    {
+     "@type": "Offer",
+     "name": "Thursday Pass",
+     "price": 240,
+     "priceCurrency": "USD",
+     "validFrom": "2027-06-01T10:00-06:00",
+     "url": "https://wrenfield.example/events/open-signal-denver-2027/#pass-thursday",
+     "availability": "https://schema.org/InStock"
+    },
+    {
+     "@type": "Offer",
+     "name": "Friday Pass",
+     "price": 240,
+     "priceCurrency": "USD",
+     "validFrom": "2027-06-01T10:00-06:00",
+     "url": "https://wrenfield.example/events/open-signal-denver-2027/#pass-friday",
+     "availability": "https://schema.org/InStock"
+    },
+    {
+     "@type": "Offer",
+     "name": "Student and Early-Career Pass",
+     "price": 180,
+     "priceCurrency": "USD",
+     "validFrom": "2027-06-01T10:00-06:00",
+     "url": "https://wrenfield.example/events/open-signal-denver-2027/#pass-student",
+     "availability": "https://schema.org/InStock"
+    },
+    {
+     "@type": "Offer",
+     "name": "Livestream Pass",
+     "price": 60,
+     "priceCurrency": "USD",
+     "validFrom": "2027-06-01T10:00-06:00",
+     "url": "https://wrenfield.example/events/open-signal-denver-2027/#pass-livestream",
+     "availability": "https://schema.org/InStock"
+    }
+   ],
+   "subEvent": [
+    {
+     "@type": "Event",
+     "@id": "https://wrenfield.example/events/open-signal-denver-2027#keynote-made-to-last",
+     "name": "Made to Last",
+     "startDate": "2027-10-07T09:30-06:00",
+     "endDate": "2027-10-07T10:15-06:00"
+    },
+    {
+     "@type": "Event",
+     "@id": "https://wrenfield.example/events/open-signal-denver-2027#listening-as-a-design-tool",
+     "name": "Listening as a Design Tool",
+     "startDate": "2027-10-07T10:45-06:00",
+     "endDate": "2027-10-07T11:30-06:00"
+    },
+    {
+     "@type": "Event",
+     "@id": "https://wrenfield.example/events/open-signal-denver-2027#a-newsletter-is-a-business",
+     "name": "A Newsletter Is a Business",
+     "startDate": "2027-10-07T11:45-06:00",
+     "endDate": "2027-10-07T12:30-06:00"
+    },
+    {
+     "@type": "Event",
+     "@id": "https://wrenfield.example/events/open-signal-denver-2027#cooperative-software",
+     "name": "Cooperative Software",
+     "startDate": "2027-10-07T14:00-06:00",
+     "endDate": "2027-10-07T14:45-06:00"
+    },
+    {
+     "@type": "Event",
+     "@id": "https://wrenfield.example/events/open-signal-denver-2027#panel-the-market-down-the-street",
+     "name": "The Market Down the Street",
+     "startDate": "2027-10-07T15:15-06:00",
+     "endDate": "2027-10-07T16:15-06:00"
+    },
+    {
+     "@type": "Event",
+     "@id": "https://wrenfield.example/events/open-signal-denver-2027#documentary-habits",
+     "name": "Documentary Habits",
+     "startDate": "2027-10-08T09:30-06:00",
+     "endDate": "2027-10-08T10:15-06:00"
+    },
+    {
+     "@type": "Event",
+     "@id": "https://wrenfield.example/events/open-signal-denver-2027#plain-language-interfaces",
+     "name": "Plain Language Interfaces",
+     "startDate": "2027-10-08T10:45-06:00",
+     "endDate": "2027-10-08T11:30-06:00"
+    },
+    {
+     "@type": "Event",
+     "@id": "https://wrenfield.example/events/open-signal-denver-2027#thirty-fonts-later",
+     "name": "Thirty Fonts Later",
+     "startDate": "2027-10-08T11:45-06:00",
+     "endDate": "2027-10-08T12:30-06:00"
+    },
+    {
+     "@type": "EducationEvent",
+     "@id": "https://wrenfield.example/events/open-signal-denver-2027#workshop-ship-a-tiny-product",
+     "name": "Ship a Tiny Product in Two Hours",
+     "startDate": "2027-10-08T14:00-06:00",
+     "endDate": "2027-10-08T16:00-06:00"
+    },
+    {
+     "@type": "Event",
+     "@id": "https://wrenfield.example/events/open-signal-denver-2027#closing-keep-a-sketchbook",
+     "name": "Keep a Sketchbook",
+     "startDate": "2027-10-08T16:30-06:00",
+     "endDate": "2027-10-08T17:15-06:00"
+    }
+   ],
+   "potentialAction": {
+    "@type": "https://schema.org/InteractAction",
+    "https://schema.org/name": "pass-form",
+    "https://schema.org/target": {
+     "@type": "https://schema.org/EntryPoint",
+     "https://schema.org/httpMethod": "POST",
+     "https://schema.org/encodingType": "application/x-www-form-urlencoded",
+     "https://nxis.ai/ns#observedUrl": "https://wrenfield.example/api/checkout",
+     "https://nxis.ai/ns#bindingPending": true,
+     "https://nxis.ai/ns#targetKind": "selfPage",
+     "https://nxis.ai/ns#pageUrl": "https://wrenfield.example/events/open-signal-denver-2027/"
+    },
+    "@id": "urn:nxis:action:open-signal-denver",
+    "https://nxis.ai/ns#reportToken": "tok.tickets"
+   }
+  },
+  "rescheduled": {
+   "@type": "ScreeningEvent",
+   "@id": "https://wrenfield.example/events/low-light-savannah-2027-07-09#event",
+   "name": "Low Light Savannah: The Tide Clock",
+   "description": "The Tide Clock, a film without dialogue about a harbor town, scored live by Ilse Varga Trio. Moved from June 25.",
+   "url": "https://wrenfield.example/events/low-light-savannah-2027-07-09/",
+   "startDate": "2027-07-09T20:00-04:00",
+   "endDate": "2027-07-09T22:00-04:00",
+   "doorTime": "2027-07-09T19:15-04:00",
+   "eventStatus": "https://schema.org/EventRescheduled",
+   "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+   "location": {
+    "@type": "EventVenue",
+    "@id": "https://wrenfield.example/events/low-light-savannah-2027-07-09#eventvenue",
+    "name": "Tidewright Hall",
+    "url": "https://wrenfield.example/venues/tidewright-hall/",
+    "address": {
+     "@type": "PostalAddress",
+     "streetAddress": "14 Marshlantern Street",
+     "addressLocality": "Savannah",
+     "addressRegion": "GA",
+     "postalCode": "31401",
+     "addressCountry": "US"
+    }
+   },
+   "previousStartDate": "2027-06-25T20:00-04:00",
+   "organizer": {
+    "@type": "Organization",
+    "@id": "https://wrenfield.example/#organization/wrenfield-events-co",
+    "name": "Wrenfield Events Co.",
+    "url": "https://wrenfield.example/"
+   },
+   "performer": [
+    {
+     "@type": "PerformingGroup",
+     "name": "Ilse Varga Trio"
+    }
+   ],
+   "offers": [
+    {
+     "@type": "Offer",
+     "name": "General Admission",
+     "price": 32,
+     "priceCurrency": "USD",
+     "validFrom": "2026-11-02T10:00-05:00",
+     "url": "https://wrenfield.example/events/low-light-savannah-2027-07-09/#pass-general",
+     "availability": "https://schema.org/InStock"
+    },
+    {
+     "@type": "Offer",
+     "name": "Front Rows",
+     "price": 48,
+     "priceCurrency": "USD",
+     "validFrom": "2026-11-02T10:00-05:00",
+     "url": "https://wrenfield.example/events/low-light-savannah-2027-07-09/#pass-front-rows",
+     "availability": "https://schema.org/InStock"
+    }
+   ]
+  },
+  "sideRoom": {
+   "@type": "MusicEvent",
+   "@id": "https://wrenfield.example/events/side-room-austin-2027-03-05#event",
+   "name": "Side Room Austin: Tamsin Roe",
+   "description": "Tamsin Roe opens the Side Room season at The Switchroom, with Rook & Lantern.",
+   "url": "https://wrenfield.example/events/side-room-austin-2027-03-05/",
+   "startDate": "2027-03-05T20:00-06:00",
+   "endDate": "2027-03-05T22:30-06:00",
+   "doorTime": "2027-03-05T19:00-06:00",
+   "eventStatus": "https://schema.org/EventScheduled",
+   "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
+   "location": {
+    "@type": "EventVenue",
+    "@id": "https://wrenfield.example/venues/the-switchroom#eventvenue",
+    "name": "The Switchroom",
+    "url": "https://wrenfield.example/venues/the-switchroom/",
+    "address": {
+     "@type": "PostalAddress",
+     "streetAddress": "618 Tallowmere Street",
+     "addressLocality": "Austin",
+     "addressRegion": "TX",
+     "postalCode": "78702",
+     "addressCountry": "US"
+    }
+   },
+   "organizer": {
+    "@type": "Organization",
+    "@id": "https://wrenfield.example/#organization/wrenfield-events-co",
+    "name": "Wrenfield Events Co.",
+    "url": "https://wrenfield.example/"
+   },
+   "performer": [
+    {
+     "@type": "Person",
+     "name": "Tamsin Roe",
+     "@id": "https://wrenfield.example/people/tamsin-roe#person"
+    },
+    {
+     "@type": "PerformingGroup",
+     "name": "Rook & Lantern"
+    }
+   ],
+   "offers": [
+    {
+     "@type": "Offer",
+     "name": "General Admission",
+     "price": 32,
+     "priceCurrency": "USD",
+     "validFrom": "2026-11-02T10:00-06:00",
+     "url": "https://wrenfield.example/events/side-room-austin-2027-03-05/#pass-general",
+     "availability": "https://schema.org/SoldOut"
+    },
+    {
+     "@type": "Offer",
+     "name": "Plus",
+     "price": 58,
+     "priceCurrency": "USD",
+     "validFrom": "2026-11-02T10:00-06:00",
+     "url": "https://wrenfield.example/events/side-room-austin-2027-03-05/#pass-plus",
+     "availability": "https://schema.org/InStock"
+    }
+   ],
+   "potentialAction": {
+    "@type": "https://schema.org/InteractAction",
+    "https://schema.org/name": "pass-form",
+    "https://schema.org/target": {
+     "@type": "https://schema.org/EntryPoint",
+     "https://schema.org/httpMethod": "POST",
+     "https://schema.org/encodingType": "application/x-www-form-urlencoded",
+     "https://nxis.ai/ns#observedUrl": "https://wrenfield.example/api/checkout",
+     "https://nxis.ai/ns#bindingPending": true,
+     "https://nxis.ai/ns#targetKind": "selfPage",
+     "https://nxis.ai/ns#pageUrl": "https://wrenfield.example/events/side-room-austin-2027-03-05/"
+    },
+    "@id": "urn:nxis:action:side-room-austin",
+    "https://nxis.ai/ns#reportToken": "tok.tickets"
+   }
+  }
+ }
+}

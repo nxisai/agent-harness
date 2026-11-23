@@ -1,0 +1,60 @@
+# The bench stack.
+#
+# Brought up beside whatever is serving the site under test; the page reaches
+# the proxy on localhost, and the proxy reaches the models.
+#
+#   docker compose -f bench/compose.yaml up -d
+#
+# Nothing here is exposed beyond the loopback interface. The proxy holds vendor
+# credentials and has no authentication of its own beyond an origin check, so
+# binding it to 0.0.0.0 would publish a metered endpoint to the network.
+services:
+  model-proxy:
+    build: ./proxy
+    container_name: bench-model-proxy
+    ports:
+      - 127.0.0.1:4100:4100
+    env_file:
+      - ./proxy/.env.local
+    environment:
+      REDIS_URL: redis://redis:6379
+      TRANSCRIPT_DIR: /runs
+    volumes:
+      # Runs outlive the container, and the scorer reads them from the host.
+      - ./runs:/runs
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4100/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 5s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: bench-redis
+    # Not published: only the proxy talks to it, and a published Redis with no
+    # password is an open data store.
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  # Lane B. Models are pulled on demand, not baked into the image:
+  #   docker compose -f bench/compose.yaml exec ollama ollama pull gemma3:4b
+  ollama:
+    image: ollama/ollama:0.40.7
+    container_name: bench-ollama
+    ports:
+      - 127.0.0.1:11434:11434
+    volumes:
+      - ollama-models:/root/.ollama
+    restart: unless-stopped
+
+volumes:
+  ollama-models:

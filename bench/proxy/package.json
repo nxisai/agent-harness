@@ -1,0 +1,18 @@
+{
+  "name": "@nxisai/bench-model-proxy",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Multi-model proxy satisfying the agent-harness proxy contract, for model evaluation.",
+  "main": "server.mjs",
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "redis": "^4.7.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

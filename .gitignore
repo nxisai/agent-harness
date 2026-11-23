@@ -1,0 +1,11 @@
+node_modules
+dist
+.tw
+*.tsbuildinfo
+.npmrc
+docs/dev-notes.md
+bench/proxy/.env.local
+bench/runs/
+bench/node_modules/
+bench/.profile/
+dist-cdn

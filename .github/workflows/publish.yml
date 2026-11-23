@@ -1,0 +1,144 @@
+########################################################################
+# Publishes @nxisai/agent-harness to npm, from the public mirror only,
+# once approved. This is the only place the package is published to npm.
+#
+# Runs on the version tag the Mirror release workflow pushes. The release
+# is checked first; the npm job then waits in the `npm` environment for a
+# person to approve it. It holds no npm token: npm trusts this workflow
+# (trusted publishing) and records where the version came from
+# (provenance), which is why package.json's repository.url names this
+# repository: npm attaches provenance only when it matches the repository
+# the publish runs in. The check job refuses a release whose
+# repository.url names anything else.
+#
+# Set up once, in nxisai/agent-harness:
+# - An `npm` environment, with a deployment rule allowing tags `v*.*.*`.
+# - npmjs.com: a trusted publisher for @nxisai/agent-harness, naming
+#   nxisai/agent-harness, this workflow file (publish.yml) and the `npm`
+#   environment.
+# CONTRIBUTING.md, "Releases", has the whole flow.
+#
+# The approval is the `npm` environment's required reviewers. GitHub only
+# offers them in public repositories on this plan, so they are added when
+# nxisai/agent-harness goes public, BEFORE the next release: until they
+# are, a real release publishes without waiting for anyone. While the
+# repository is private nothing is uploaded (see below), so nothing needs
+# approving.
+#
+# A pre-release version (0.8.0-beta.1) goes to the dist-tag named by its
+# first pre-release identifier (beta); a plain version, to latest.
+#
+# While nxisai/agent-harness is private, the approved job is a rehearsal:
+# it builds and runs `npm publish --dry-run`. npm generates provenance only
+# for public repositories, and a version published without it cannot be
+# published again with it, so nothing is uploaded until the repository is
+# public. A tag pushed while it was private is published afterwards by
+# running this workflow on that tag (workflow_dispatch, "Use workflow
+# from" the tag). A version already on npm is never published again.
+#
+# Only in the public mirror. The repository it is mirrored from is private
+# and is where the work happens; the file is there so the mirror carries
+# it, and it does nothing there.
+########################################################################
+
+name: Publish
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: check the release (Node ${{ matrix.node }})
+    if: github.repository == 'nxisai/agent-harness'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      # Every Node the package claims to support, so "engines": ">=20" stays tested.
+      matrix:
+        node: ['20', '22']
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      dist_tag: ${{ steps.v.outputs.dist_tag }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - id: v
+        name: The tag and package.json agree, and package.json names this repository
+        run: |
+          version="$(node -p 'require("./package.json").version')"
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::the tag is $GITHUB_REF_NAME but package.json is $version"; exit 1
+          fi
+          # npm attaches provenance only when repository.url is the repository the publish runs in.
+          url="$(node -p 'const r = require("./package.json").repository; (typeof r === "string" ? r : r?.url) ?? ""')"
+          if [ "$url" != "git+https://github.com/$GITHUB_REPOSITORY.git" ]; then
+            echo "::error::package.json's repository.url is '$url', not git+https://github.com/$GITHUB_REPOSITORY.git"; exit 1
+          fi
+          case "$version" in
+            *-*) prerelease="${version#*-}"; dist_tag="${prerelease%%.*}" ;;
+            *) dist_tag=latest ;;
+          esac
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "dist_tag=$dist_tag" >> "$GITHUB_OUTPUT"
+
+      # Before npm ci, so only this release's own files are scanned.
+      - name: Nothing internal in the tree
+        run: node scripts/check-public.mjs .
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test
+      - name: Nothing internal in the npm build
+        run: node scripts/check-public.mjs dist
+
+  npm:
+    name: npm (@nxisai/agent-harness)
+    needs: check
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write # trusted publishing and provenance
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '22'
+          registry-url: https://registry.npmjs.org
+
+      - run: npm ci
+
+      - name: Publish
+        env:
+          VERSION: ${{ needs.check.outputs.version }}
+          DIST_TAG: ${{ needs.check.outputs.dist_tag }}
+          REPOSITORY_PRIVATE: ${{ github.event.repository.private }}
+        run: |
+          # Trusted publishing needs npm 11.5.1 or newer; Node 22 ships npm 10.
+          # Pinned to a major: npm 12 raised its Node floor.
+          npm install -g npm@^11.5.1 --no-fund --no-audit
+          if npm view "@nxisai/agent-harness@$VERSION" version >/dev/null 2>&1; then
+            echo "@nxisai/agent-harness@$VERSION is already on npm"; exit 0
+          fi
+          # prepublishOnly builds dist/ from this checkout before either command packs it.
+          if [ "$REPOSITORY_PRIVATE" = "true" ]; then
+            echo "::notice::nxisai/agent-harness is private, so this is a rehearsal: nothing is uploaded."
+            npm publish --dry-run --access public --tag "$DIST_TAG"
+          else
+            npm publish --provenance --access public --tag "$DIST_TAG"
+          fi
