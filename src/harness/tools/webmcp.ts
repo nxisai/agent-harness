@@ -131,12 +131,19 @@ const REFUSED_SHAPE =
  * - Chrome 153 (stable): the tool object and a JSON *string*, required. An
  *   object is refused, before the tool runs, with "Failed to parse input
  *   arguments".
+ * - Chrome 158: the spec's form, `executeTool(tool, input?, options?)`, with
+ *   `tool` the very `Tool` object `getTools()` returned. Anything else, a copy
+ *   of it included, is refused with "parameter 1 is not of type 'Tool'", and a
+ *   JSON string with "parameter 2 is not of type 'object'".
  * - Older polyfills (`@nxisai/webmcp` 0.1) took a name. Today's, and the
  *   harness's own registry, follow the spec.
  *
- * So: object, then string, then name — each tried only when the one before was
- * refused for its shape. A tool that ran and failed is reported as it failed,
- * never retried in another form, since it may already have done something.
+ * So: object, then string, with the tool as given; then, when the registry
+ * refused that tool itself (a copy, a stand-in, or none at all), the same two
+ * with the registry's own object for that name, read fresh from `getTools()`;
+ * then the name. Each is tried only when the one before was refused for its
+ * shape. A tool that ran and failed is reported as it failed, never retried in
+ * another form, since it may already have done something.
  *
  * @returns The tool's response as an object, whichever runtime answered — see
  * {@link asResponse}.
@@ -148,28 +155,47 @@ export async function executeRegistered(
   args: Record<string, unknown>,
 ): Promise<ModelContextToolResponse> {
   const input = args ?? {};
-  const attempts: (() => Promise<ModelContextToolResponse>)[] = [
-    ...(toolObj
-      ? [
-          () => mc.executeTool(toolObj as unknown as object, input),
-          () => mc.executeTool(toolObj as unknown as object, JSON.stringify(input)),
-        ]
-      : []),
-    () => mc.executeTool(name, input),
+  type Call = () => Promise<ModelContextToolResponse>;
+  const forms = (t: ModelContextToolInfo): Call[] => [
+    () => mc.executeTool(t as unknown as object, input),
+    () => mc.executeTool(t as unknown as object, JSON.stringify(input)),
+  ];
+  let used = toolObj;
+  const stages: (() => Promise<Call[]>)[] = [
+    async () => (toolObj ? forms(toolObj) : []),
+    // Read only once the tool we hold was refused: the registry's own object for this name, if that isn't it.
+    async () => {
+      const live = await liveTool(mc, name);
+      if (!live || live === toolObj) return [];
+      used = live;
+      return forms(live);
+    },
+    async () => [() => mc.executeTool(name, input)],
   ];
   let refused: unknown;
-  for (const attempt of attempts) {
-    try {
-      const res = asResponse(await attempt());
-      // Every page form runs through here, whichever way it was reached: the one place to count it.
-      reportSubmitted(toolObj, name, res);
-      return res;
-    } catch (err) {
-      if (!REFUSED_SHAPE.test(String((err as Error)?.message || err))) throw err;
-      refused = err;
+  for (const stage of stages) {
+    for (const call of await stage()) {
+      try {
+        const res = asResponse(await call());
+        // Every page form runs through here, whichever way it was reached: the one place to count it.
+        reportSubmitted(toolObj ?? used, name, res);
+        return res;
+      } catch (err) {
+        if (!REFUSED_SHAPE.test(String((err as Error)?.message || err))) throw err;
+        refused = err;
+      }
     }
   }
   throw refused;
+}
+
+/** The registry's own tool for a name, or null when it has none or can't list. */
+async function liveTool(mc: ModelContext, name: string): Promise<ModelContextToolInfo | null> {
+  try {
+    return (await mc.getTools?.())?.find((t) => t.name === name) ?? null;
+  } catch {
+    return null;
+  }
 }
 
 /**

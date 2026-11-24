@@ -119,14 +119,23 @@ export function renderMessages(messages: ChatMessage[], boundary: string, src: C
   return out;
 }
 
+/** What is read of a tool downstream: the fields of `ModelContextToolInfo`. */
+const TOOL_FIELDS = ['name', 'description', 'inputSchema', 'input_schema', 'parameters', 'schema', 'annotations', 'origin'] as const;
+
 /**
  * The tools as the model should read them: every description from the page, a remote MCP server or the site in a
  * data block. The harness's own tools keep theirs.
+ *
+ * Each changed tool is copied field by field, not spread: Chrome's native `getTools()` returns `Tool` objects whose
+ * fields are accessors on the prototype, and a spread would copy none of them, not even the name.
  */
 export function renderTools(tools: ModelContextToolInfo[], boundary: string, src: ContextSources): ModelContextToolInfo[] {
   return tools.map((t) =>
     OWN_TOOLS.has(t.name) || !t.description
       ? t
-      : { ...t, description: dataBlock(t.description, boundary, `${src.origin(t.name)} tool description`, untrustedTool(t.name, src)) },
+      : {
+          ...(Object.fromEntries(TOOL_FIELDS.map((k) => [k, t[k]])) as unknown as ModelContextToolInfo),
+          description: dataBlock(t.description, boundary, `${src.origin(t.name)} tool description`, untrustedTool(t.name, src)),
+        },
   );
 }

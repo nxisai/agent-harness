@@ -17,7 +17,7 @@
  * @module
  */
 import { toolSchema } from '../harness/tools/schema.js';
-import type { ModelContextToolInfo, ParsedToolCall } from '../types.js';
+import type { JsonSchema, ModelContextToolInfo, ParsedToolCall } from '../types.js';
 import type { Completion, ModelProvider } from './types.js';
 import type { GuardrailDecision } from '../guardrails/types.js';
 
@@ -81,11 +81,17 @@ interface ProxyResponse {
  * `inputSchema` is the one the contract documents.
  */
 function wireTools(tools: ModelContextToolInfo[]) {
-  return tools.map((tool) => ({
-    name: tool.name,
-    description: tool.description ?? '',
-    inputSchema: toolSchema(tool),
-  }));
+  const out: { name: string; description: string; inputSchema: JsonSchema }[] = [];
+  for (const tool of tools) {
+    const name = tool?.name;
+    // A tool without a name can't be called, and the model API refuses the whole request over it.
+    if (typeof name !== 'string' || !name) {
+      console.warn('[nxis] a tool with no name was left out of the request', tool);
+      continue;
+    }
+    out.push({ name, description: tool.description ?? '', inputSchema: toolSchema(tool) });
+  }
+  return out;
 }
 
 /**

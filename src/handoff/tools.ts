@@ -128,7 +128,8 @@ export function refreshHandoffTools<T extends ModelContextToolInfo>(tools: T[], 
     const kind: HandoffKind | null = tool.name === TRANSFER_TO_AGENT_TOOL ? 'agent' : tool.name === TALK_TO_A_PERSON_TOOL ? 'person' : null;
     const mine = kind && targets.filter((t) => t.kind === kind);
     if (!mine) out.push(tool);
-    else if (mine.length) out.push({ ...tool, ...handoffToolInfo(kind!, mine) });
+    // Built, not spread: a native registry's tool keeps its fields on the prototype, where a spread finds none.
+    else if (mine.length) out.push({ origin: tool.origin, ...handoffToolInfo(kind!, mine) } as T);
   }
   return out;
 }

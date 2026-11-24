@@ -27,7 +27,7 @@ The element registers itself, finds the page's tools, and renders a chat surface
 `npm run build:cdn` builds the element as a self-contained browser bundle, for a page that loads it from a URL with no npm install and no bundler:
 
 ```html
-<script type="module" src="https://<cdn>/harness/0.15.2/ui.js"
+<script type="module" src="https://<cdn>/harness/0.15.3/ui.js"
         integrity="sha384-…" crossorigin="anonymous"></script>
 <nxis-agent></nxis-agent>
 ```

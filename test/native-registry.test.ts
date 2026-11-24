@@ -140,3 +140,99 @@ describe('calling a tool on a native registry', () => {
     expect(byName).toHaveBeenCalledWith('page_links', { a: 1 });
   });
 });
+
+/**
+ * Chrome 158, measured on a live page: `executeTool(tool, input?, options?)` (its `length` is 1), where `tool` must be
+ * the very `Tool` object `getTools()` returned. A copy of it, an object made from it, a name, `{ tool, input }` and
+ * `{ name, arguments }` are all refused before anything runs; so is a JSON string for the input.
+ */
+function chrome158(names: string[]) {
+  class Tool {
+    #name: string;
+    constructor(name: string) {
+      this.#name = name;
+    }
+    get name() {
+      return this.#name;
+    }
+    get description() {
+      return `Runs ${this.#name}.`;
+    }
+  }
+  const live = names.map((n) => new Tool(n));
+  const ran: string[] = [];
+  const executeTool = vi.fn(async (t: unknown, input?: unknown) => {
+    if (!(t instanceof Tool) || !live.includes(t)) {
+      throw new TypeError("Failed to execute 'executeTool' on 'ModelContext': parameter 1 is not of type 'Tool'.");
+    }
+    if (input !== undefined && (typeof input !== 'object' || input === null)) {
+      throw new TypeError("Failed to execute 'executeTool' on 'ModelContext': parameter 2 is not of type 'object'.");
+    }
+    ran.push(t.name);
+    return NATIVE_RESPONSE;
+  });
+  // A fresh array of the same objects on every call, as Chrome returns.
+  const getTools = vi.fn(async () => [...live]);
+  const mc = { executeTool, getTools } as unknown as ModelContext;
+  return { mc, executeTool, getTools, ran, live: live as unknown as ModelContextToolInfo[] };
+}
+
+describe('calling a tool on Chrome 158', () => {
+  it('passes the Tool object getTools() returned, once, and lists nothing', async () => {
+    const { mc, executeTool, getTools, ran, live } = chrome158(['page_links', 'nxis_query']);
+    const res = await executeRegistered(mc, live[0], 'page_links', { page: 'home' });
+    expect(res).toEqual({ content: [{ type: 'text', text: ANSWER }] });
+    expect(executeTool).toHaveBeenCalledTimes(1);
+    expect(executeTool).toHaveBeenCalledWith(live[0], { page: 'home' });
+    expect(getTools).not.toHaveBeenCalled();
+    expect(ran).toEqual(['page_links']);
+  });
+
+  it('given a copy of the tool, runs the registry’s own object for that name instead', async () => {
+    const { mc, ran, live, executeTool } = chrome158(['page_links', 'transfer_to_agent']);
+    const copy = { name: 'transfer_to_agent', description: 'Hand over.', inputSchema: { type: 'object' } } as ModelContextToolInfo;
+    const res = await executeRegistered(mc, copy, 'transfer_to_agent', { target: 'support' });
+    expect(proseAnswer(res)).toBe(ANSWER);
+    expect(ran).toEqual(['transfer_to_agent']);
+    expect(executeTool).toHaveBeenLastCalledWith(live[1], { target: 'support' });
+  });
+
+  it('given no tool object, finds it by name rather than passing the name', async () => {
+    const { mc, ran, live, executeTool } = chrome158(['page_links']);
+    await executeRegistered(mc, null, 'page_links', {});
+    expect(ran).toEqual(['page_links']);
+    expect(executeTool).toHaveBeenCalledTimes(1);
+    expect(executeTool).toHaveBeenCalledWith(live[0], {});
+  });
+
+  it('refuses a tool the registry does not have, having run nothing', async () => {
+    const { mc, ran } = chrome158(['page_links']);
+    await expect(executeRegistered(mc, { name: 'gone' } as ModelContextToolInfo, 'gone', {})).rejects.toThrow(/not of type 'Tool'/);
+    expect(ran).toEqual([]);
+  });
+
+  it('never retries a tool that ran and threw, after finding it by name', async () => {
+    const { mc, live } = chrome158(['quote_form']);
+    let runs = 0;
+    const executeTool = vi.fn(async (t: unknown) => {
+      if (t !== live[0]) throw new TypeError("Failed to execute 'executeTool' on 'ModelContext': parameter 1 is not of type 'Tool'.");
+      runs++;
+      throw Object.assign(new Error('Tool was executed but the invocation failed.'), { name: 'UnknownError' });
+    });
+    const threw = { ...mc, executeTool, getTools: (mc as unknown as { getTools: () => unknown }).getTools } as unknown as ModelContext;
+    await expect(executeRegistered(threw, { name: 'quote_form' } as ModelContextToolInfo, 'quote_form', {})).rejects.toThrow(/was executed/);
+    expect(runs).toBe(1);
+  });
+});
+
+describe('calling a tool on a polyfill that takes a name', () => {
+  it('falls back to the name when neither the tool given nor a listed one is accepted', async () => {
+    const byName = vi.fn(async (t: unknown) => {
+      if (typeof t !== 'string') throw new TypeError("parameter 1 is not of type 'RegisteredTool'");
+      return { content: [{ type: 'text', text: 'ok' }] };
+    });
+    const res = await executeRegistered({ executeTool: byName, getTools: async () => [] } as unknown as ModelContext, tool, 'page_links', {});
+    expect(extractResult(res)).toBe('ok');
+    expect(byName).toHaveBeenLastCalledWith('page_links', {});
+  });
+});

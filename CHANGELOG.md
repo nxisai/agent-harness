@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.15.3
+
+Two fixes for pages in Chrome with native WebMCP. Every turn there failed in 0.15.0 to 0.15.2.
+
+### Fixed
+
+- **Site tools keep their names in Chrome's native WebMCP.** In Chrome, `document.modelContext.getTools()` returns `Tool` objects whose fields are accessors on the prototype, and the guardrails copied each tool with an object spread to wrap its description, which copies none of them. Every tool but the harness's own reached the model with a description and no name or schema, and a model proxy's API refused the whole request (`tools.0.custom.name: Field required`), so every turn failed. Tools are now copied field by field (`name`, `description`, `inputSchema` and its aliases, `annotations`, `origin`), the handoff tools are built rather than spread, and the proxy provider leaves out a tool with no name, with a warning, instead of sending a request that would be refused.
+  - **Sizes.** The guardrails chunk's budget rises from 8,560 to 8,640 B (+80 B) and the ui page-load budget's margin from 18,588 to 18,652 B (+64 B).
+- **Tools run on Chrome 158.** Chrome 158's native `executeTool(tool, input?, options?)` accepts only the very `Tool` object `getTools()` returned: a copy of it, an object made from it or a name is refused with "parameter 1 is not of type 'Tool'", and a JSON string input with "parameter 2 is not of type 'object'". A tool the harness holds as a copy (the handoff tools, rebuilt each turn for the targets listed now) or not at all failed every form it tried. When the registry refuses the tool it was given, `executeRegistered` now reads the registry's own object for that name from `getTools()` and calls it with the same two forms, then falls back to the name as before. Every step is still taken only when the one before was refused for its shape, before anything ran: a tool that ran and failed is never tried again.
+  - **Sizes.** The ui page-load budget's margin rises from 18,652 to 18,780 B (+128 B).
+
 ## 0.15.2
 
 No change to the package's code. This release is about where it is published from.
