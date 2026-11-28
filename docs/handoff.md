@@ -172,9 +172,9 @@ A target that ignores the extension still works: the first message also carries 
 | `page` | yes | `{ url, title, entity? }`. `url` is the page without dynamic parameters (`surface`, `utm_*`, `gclid`, `fbclid`); `entity` is the page's JSON-LD `@id` when there is one. |
 | `facts` | no | `[{ name, value }]`: values the visitor gave and agreed to share. |
 | `transcript` | no | `[{ role: 'visitor' \| 'assistant', text }]`, the last turns, text only. Sent only when the relay lists the target with `transcript: true`. |
-| `contact` | no | `{ email?, phone?, name? }`, only when the visitor entered it to be contacted. |
+| `contact` | no | `{ name?, email?, phone?, street?, city?, zip? }`. To an agent: the visitor's details for this conversation (see [The visitor's details](#the-visitors-details)), so it doesn't ask for them again. To a person: `{ email }`, only when the visitor entered it to be contacted. |
 | `locale` | yes | The visitor's language, `navigator.language`. |
-| `ui` | yes | What the page draws of a reply, by version: `{ cards: 2, feedback: 1 }`. `cards` draws an [`answer`](#answer-cards-for-an-answers-sources) part's sources (`1`: as cards under the reply; `2`: as a numbered Sources list in the bubble, with a marker after each claim the part's `claims` places); `feedback: 1` puts thumbs-up and thumbs-down buttons on each answer with an `answerId` and sends them back as [`feedback`](#feedback--and--on-an-answer) parts. A target that finds no `ui.cards` (an older harness) should put its sources in the text instead. Not a shared field: it says what the page can do, not anything about the visitor. |
+| `ui` | yes | What the page draws of a reply, by version: `{ cards: 2, feedback: 1, surfaces: 3 }`. `cards` draws an [`answer`](#answer-cards-for-an-answers-sources) part's sources (`1`: as cards under the reply; `2`: as a numbered Sources list in the bubble, with a marker after each claim the part's `claims` places); `feedback: 1` puts thumbs-up and thumbs-down buttons on each answer with an `answerId` and sends them back as [`feedback`](#feedback--and--on-an-answer) parts; `surfaces: 1` draws a [`surface`](#surface-and-action-step-surfaces) part's A2UI steps and sends the visitor's choices back as `action` parts, `surfaces: 2` also draws the guided intake's `ChoiceChips`, `StepHeader` and `FieldNote`, and `surfaces: 3` a field's `required`, `optional` and `error`. A target that finds no `ui.cards` (an older harness) should put its sources in the text instead. Not a shared field: it says what the page can do, not anything about the visitor. |
 | `returnTo` | yes | `{ conversationId, origin }`. |
 | `consent` | yes | `{ target, shared, at }`: the target's name, the envelope field names sent, and the time the visitor pressed Send. |
 
@@ -223,21 +223,37 @@ The harness draws a thumbs-up and a thumbs-down under every answer that has an `
 
 `HandoffController.feedback(conversationId, answerId, value)` sends one from a page of your own. It resolves `true` when the relay took it, and `false` when there is no open task, the answer already has a vote, or the relay refused it. The controller records the vote before sending it, so a failed send is not retried.
 
+### `surface` and `action`: step surfaces
+
+On an agent message, beside its text part: `{ handoff: 'surface', messages: [...] }`, A2UI v1.0 messages for the target's steps (an intake form, an estimate, a day and window picker, the review the visitor confirms, a receipt), drawn under the reply with the steps catalog. A choice or a press on one comes back on the same task as the visitor's words and `{ handoff: 'action', surfaceId, name, component, context, commit?, consent? }`; `commit: true` is set only by a `ConfirmCard`'s confirm button, the visitor's yes. See [Step surfaces](quote-booking-surfaces.md).
+
 ### Links in a reply
 
 A remote reply's addresses become links, bare (`https://…`) or as Markdown (`[words](address)`), when the page allows their origin: this page's own, and those listed in the element's `link-origins` attribute (`link-origins="https://help.example.com"`). Another origin is https only, opens in a new tab with no referrer, and a link to another page of this site keeps the conversation, as **Open page** does. Anything else (another origin, `javascript:`, `data:`, an address with credentials) stays as written, as text. A cited video's **Watch** may also link to YouTube or Vimeo.
 
 ### `handback`: the last word
 
-In the final status message, or as an artifact: `{ handoff: 'handback', outcome, note, references? }`.
+In the final status message, or as an artifact: `{ handoff: 'handback', outcome, note, references?, contact?, next? }`.
 
 | Field | Holds |
 | --- | --- |
 | `outcome` | `'resolved'`, `'unresolved'`, or `'transferred'` (the target passes the visitor back to the assistant to carry on). |
-| `note` | One or two sentences for the in-page assistant: what happened, what's left. |
+| `note` | One or two sentences for the in-page assistant: what happened, what's left. From a person target it is also shown to the visitor, as text: "Our team closed this conversation: Booked for 2pm", or for `transferred`, "Our team passed you back: …". Send an empty note when the person wrote none; the visitor then sees only "Back with the assistant". |
 | `references` | `[{ label, value }]`: a booking reference, a ticket number. Shown to the visitor. |
+| `contact` | `{ name?, email?, phone?, street?, city?, zip? }`: the visitor's details as they confirmed them with the target (on its review card, say), and only those. The page keeps them for the conversation. Never shown, and never given to the model except as the profile's data. |
+| `next` | `{ target, reason, summary }`: the visitor asked this target for another agent (a receipt's "Book a visit too"). The page offers that handoff at once, as the same Hand over card the assistant's own `transfer_to_agent` call draws, with this `reason` and `summary`, and without asking the model; the visitor still presses Hand over. A person target (the team, for an agent that hands back because the visitor asked for a person) gets `talk_to_a_person`'s card the same way (Connect me). Only when `target` names a target the relay lists now as available, other than the one handing back, in the conversation on screen, after any turn already running. Otherwise nothing more happens than without it: the assistant reads the note. Read strictly: each a string, trimmed, not empty, at most 64, 200 and 1,000 characters; anything else drops `next`. Offered once: it isn't kept, so a reload doesn't offer it again. |
 
 The harness adds the hand-back to the conversation as the in-page assistant's own note, so it can carry on: "Your inspection is booked for Tuesday, reference CPL-4821. Anything else?" Nothing else the target said reaches the model: remote messages are shown to the visitor, and never treated as instructions.
+
+## The visitor's details
+
+A visitor gives their name, email, phone and address once per conversation, whichever agent asks first.
+
+- **Kept with the conversation.** The details the visitor types or confirms in a conversation are kept with it, in the same storage as its messages: a field named as one of `PROFILE_ALIASES`' keys exactly (`name`, `email`, `phone`, `address` (the street), `city`, `zip`) on a form the visitor sends, a page's or a target's step's (an `action` part's `form`), and a hand-back's `contact`. Never a value the model wrote. A blank field changes nothing.
+- **Read as the profile.** The profile the agent reads is the host's [preferences](../README.md#preferences) with the conversation's details over them: it fills the page's forms, and the model reads it only inside the saved profile's data block.
+- **Sent forward.** Every handoff to an agent target carries it as the envelope's `contact`. A person target is sent `{ email }` only when the visitor leaves one for a reply.
+- **Gone with the conversation.** A reload keeps them; "New conversation" starts without them; deleting the conversation deletes them. They are never shared between conversations or sites, and never written to the preferences or their storage.
+- **"Not you?"** A target's card can offer "Not you? Clear details" as a button whose event is `clear_details`: the page clears the conversation's details before the press is sent, and the target clears its form. The host's preferences stay the host's.
 
 ## Lifecycle
 
@@ -253,13 +269,14 @@ The harness adds the hand-back to the conversation as the in-page assistant's ow
 
 `TASK_STATE_AUTH_REQUIRED` is treated as failed: a target acting as the visitor is out of scope for now.
 
-A handoff survives page changes and reloads. The controller keeps `{ target, taskId, contextId, key, state }` per conversation in `localStorage`, and on the next page resumes it: `SubscribeToTask` while it is live, `GetTask` once it has finished. A stream the host cuts off (a Netlify function has a time limit) is resumed the same way.
+A handoff survives page changes and reloads. The controller keeps `{ target, taskId, contextId, key, state }` per conversation in `localStorage`, and on the next page resumes it: `SubscribeToTask` while it is live, `GetTask` once it has finished. A stream the host cuts off (a Netlify function has a time limit) is resumed the same way. A stream that brings nothing, or ends with an error, and a message refused because the task has ended, are followed by one `GetTask`: a task that has ended is shown as it ended (a person who closes the conversation seconds after it opens still hands back with their note), and only a task that can't be read is reported as unreachable.
 
 ## Writing a target
 
 Any A2A 1.0 server works. What makes one good behind a handoff:
 
-- Read the `envelope` from the first message, and don't ask the visitor for anything it already says.
+- Read the `envelope` from the first message, and don't ask the visitor for anything it already says: its `contact` fills the matching fields. Show them on the review card, where the visitor can change them.
+- Hand back the details the visitor confirmed as the hand-back's `contact`, so the next agent has them.
 - Ask with `TASK_STATE_INPUT_REQUIRED`, one question at a time.
 - Finish with a `handback`, so the assistant can carry on.
 - Declare the extension in the Agent Card's `capabilities.extensions`.

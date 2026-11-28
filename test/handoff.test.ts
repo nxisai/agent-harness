@@ -52,6 +52,7 @@ function memoryStorage(): Storage {
 type Answer =
   | { events: A2AStreamResponse[]; headers?: Record<string, string> }
   | { result: unknown }
+  | { rpcError: { code: number; message: string }; sse?: boolean }
   | { status: number; retryAfter?: number };
 
 interface Call {
@@ -86,6 +87,12 @@ function fakeRelay(
         status: answer.status,
         headers: answer.retryAfter ? { 'retry-after': String(answer.retryAfter) } : {},
       });
+    }
+    if ('rpcError' in answer) {
+      const error = JSON.stringify({ jsonrpc: '2.0', id: body.id, error: answer.rpcError });
+      return answer.sse
+        ? new Response(`data: ${error}\n\n`, { headers: { 'content-type': 'text/event-stream' } })
+        : new Response(error, { headers: { 'content-type': 'application/json' } });
     }
     if ('result' in answer) {
       return new Response(JSON.stringify({ jsonrpc: '2.0', id: body.id, result: answer.result }), {
@@ -217,9 +224,90 @@ describe('a handoff to a person', () => {
       handoff: 'envelope',
       reason: 'Wants a boiler inspection',
       page: { url: 'https://copperline.example/book', title: 'Book a visit' },
-      ui: { cards: 2, feedback: 1 },
+      ui: { cards: 2, feedback: 1, surfaces: 3 },
       consent: { target: 'booking', shared: ['reason', 'summary', 'page'], at: '2026-09-23T12:00:00.000Z' },
     });
+    controller.dispose();
+  });
+});
+
+describe('a team that closes the handoff seconds after it opens', () => {
+  const opened = {
+    headers: { [HANDOFF_KEY_HEADER]: KEY },
+    events: [
+      { task: { id: 't1', contextId: 'c1', status: { state: 'TASK_STATE_SUBMITTED' as const } } },
+      status('TASK_STATE_SUBMITTED', { messageId: 'q1', role: 'ROLE_AGENT', parts: [ext({ handoff: 'queue' })] }),
+    ],
+  };
+  const closedTask = {
+    task: {
+      id: 't1',
+      contextId: 'c1',
+      status: {
+        state: 'TASK_STATE_COMPLETED',
+        message: agentSays('m9', "Thanks for your patience — I've closed this conversation.", [
+          ext({ handoff: 'handback', outcome: 'resolved', note: 'Sorted on the phone.', references: [{ label: 'Reference', value: 'RB-77' }] }),
+        ]),
+      },
+    },
+  };
+  const team = (fetchImpl: typeof fetch) =>
+    new HandoffController({ relay: RELAY, targets: { team: { kind: 'person', label: 'Our team' } }, fetchImpl, storage: null, resumeDelayMs: 1 });
+  const expectClosed = (events: HandoffEvent[], controller: HandoffController) => {
+    const back = events.find((e) => e.type === 'handback') as Extract<HandoffEvent, { type: 'handback' }> | undefined;
+    expect(back?.handBack).toEqual({ outcome: 'resolved', note: 'Sorted on the phone.', references: [{ label: 'Reference', value: 'RB-77' }] });
+    expect(controller.session('conv-1')).toMatchObject({ state: 'handed-back' });
+    expect(controller.session('conv-1')?.error).toBeUndefined();
+    expect(states(events)).not.toContain('failed');
+  };
+
+  it('reads the task when the next stream comes back empty, and shows the close note', async () => {
+    const { fetchImpl, calls } = fakeRelay({ team: [opened, { events: [] }, { result: closedTask }] });
+    const controller = team(fetchImpl);
+    const { events, until } = watch(controller);
+    await controller.start('conv-1', 'team', envelope('team'));
+    await until((ev) => states(ev).includes('handed-back'));
+    expect(calls.map((c) => c.method)).toEqual(['SendStreamingMessage', 'SubscribeToTask', 'GetTask']);
+    expect(calls[2].params).toMatchObject({ id: 't1' });
+    expectClosed(events, controller);
+  });
+
+  it('reads the task when the stream answers that it has ended, and shows the close note', async () => {
+    const { fetchImpl, calls } = fakeRelay({
+      team: [opened, { rpcError: { code: -32004, message: 'This task has ended.' }, sse: true }, { result: closedTask }],
+    });
+    const controller = team(fetchImpl);
+    const { events, until } = watch(controller);
+    await controller.start('conv-1', 'team', envelope('team'));
+    await until((ev) => states(ev).includes('handed-back'));
+    expect(calls.map((c) => c.method)).toEqual(['SendStreamingMessage', 'SubscribeToTask', 'GetTask']);
+    expectClosed(events, controller);
+  });
+
+  it('shows the close note, not a failure, when the visitor writes into a conversation the team has closed', async () => {
+    const { fetchImpl, calls } = fakeRelay({
+      team: [opened, { rpcError: { code: -32004, message: 'This conversation has ended.' } }, { result: closedTask }],
+    });
+    const controller = new HandoffController({ relay: RELAY, targets: { team: { kind: 'person', label: 'Our team' } }, fetchImpl, storage: null, resumeDelayMs: 60_000 });
+    const { events, until } = watch(controller);
+    await controller.start('conv-1', 'team', envelope('team'));
+    await until((ev) => states(ev).includes('queued'));
+    await new Promise((r) => setTimeout(r, 5));
+    await controller.send('conv-1', 'Hello?');
+    expect(calls.map((c) => c.method)).toEqual(['SendStreamingMessage', 'SendStreamingMessage', 'GetTask']);
+    expectClosed(events, controller);
+    controller.dispose();
+  });
+
+  it('still says it couldn’t reach the team when the task can’t be read either', async () => {
+    const { fetchImpl } = fakeRelay({ team: [opened, { status: 502 }, { status: 502 }] });
+    const controller = new HandoffController({ relay: RELAY, targets: { team: { kind: 'person', label: 'Our team' } }, fetchImpl, storage: null, resumeDelayMs: 60_000 });
+    const { until } = watch(controller);
+    await controller.start('conv-1', 'team', envelope('team'));
+    await until((ev) => states(ev).includes('queued'));
+    await new Promise((r) => setTimeout(r, 5));
+    await expect(controller.send('conv-1', 'Hello?')).rejects.toThrow();
+    expect(controller.session('conv-1')).toMatchObject({ state: 'failed', error: "I couldn't reach Our team." });
     controller.dispose();
   });
 });

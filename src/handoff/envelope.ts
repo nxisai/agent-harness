@@ -23,8 +23,11 @@ export interface HandoffEnvelope {
   facts?: { name: string; value: string }[];
   /** The last turns, text only. Only for a target the relay allows it for. */
   transcript?: { role: 'visitor' | 'assistant'; text: string }[];
-  /** How to reach the visitor later, only when they asked to be contacted. */
-  contact?: { email?: string; phone?: string; name?: string };
+  /**
+   * The visitor's details. To an agent: the ones they gave or confirmed earlier in this conversation, so the target
+   * doesn't ask again. To a person: an email address, only when they asked to be contacted.
+   */
+  contact?: HandoffContact;
   /** The visitor's language. */
   locale: string;
   /**
@@ -40,6 +43,35 @@ export interface HandoffEnvelope {
   consent: { target: string; shared: string[]; at: string };
 }
 
+/** The visitor's details, as a handoff carries them: every field optional, each a short string. */
+export interface HandoffContact {
+  name?: string;
+  email?: string;
+  phone?: string;
+  street?: string;
+  city?: string;
+  zip?: string;
+}
+
+/** The fields of {@link HandoffContact}, in the order a card lists them. */
+export const CONTACT_FIELDS = ['name', 'email', 'phone', 'street', 'city', 'zip'] as const;
+
+/**
+ * A `contact` as sent, read strictly: only the {@link CONTACT_FIELDS}, each a string without control characters,
+ * trimmed and at most 200 characters. Null when none is left.
+ */
+export function readContact(v: unknown): HandoffContact | null {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return null;
+  const out: HandoffContact = {};
+  for (const k of CONTACT_FIELDS) {
+    const x = (v as Record<string, unknown>)[k];
+    if (typeof x !== 'string') continue;
+    const t = x.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim().slice(0, 200);
+    if (t) out[k] = t;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
 /** What the page can draw of a target's replies. */
 export interface HandoffUi {
   /**
@@ -49,10 +81,17 @@ export interface HandoffUi {
   cards?: number;
   /** The version of answer feedback the page sends: 👍 and 👎, as a `feedback` part. */
   feedback?: number;
+  /**
+   * The version of step surfaces the page draws: 1, A2UI v1.0 messages in a `surface` part, on the steps catalog,
+   * with the visitor's choices sent back as `action` parts; 2, also the guided intake's `ChoiceChips`, `StepHeader`
+   * and `FieldNote`; 3, also a TextField's and a ChoiceChips' `required`, `optional` and `error`. See
+   * docs/quote-booking-surfaces.md.
+   */
+  surfaces?: number;
 }
 
-/** What this harness draws: an `answer` part's sources, version 2, with feedback on each answer, version 1. */
-export const HANDOFF_UI: Readonly<HandoffUi> = Object.freeze({ cards: 2, feedback: 1 });
+/** What this harness draws: an `answer` part's sources, version 2, feedback on each answer, version 1, and step surfaces, version 3. */
+export const HANDOFF_UI: Readonly<HandoffUi> = Object.freeze({ cards: 2, feedback: 1, surfaces: 3 });
 
 /** 👍 or 👎. */
 export type FeedbackValue = 'up' | 'down';
@@ -62,6 +101,16 @@ export interface HandBack {
   outcome: 'resolved' | 'unresolved' | 'transferred';
   note: string;
   references: { label: string; value: string }[];
+  /**
+   * The visitor's details the target took from what they confirmed (its review card, a form they sent): the page
+   * keeps them for the conversation, so the next agent doesn't ask again.
+   */
+  contact?: HandoffContact;
+  /**
+   * Another agent target the visitor asked for (a receipt's "Book a visit too"): the page offers the handoff to it
+   * at once, as its own Hand over card, when it is listed, available, and not the target that handed back.
+   */
+  next?: { target: string; reason: string; summary: string };
 }
 
 /** Query parameters that only describe how a page was reached or shown, never which page it is. */
@@ -117,7 +166,7 @@ export interface EnvelopeInput {
   conversationId: string;
   facts?: { name: string; value: string }[];
   transcript?: { role: 'visitor' | 'assistant'; text: string }[];
-  contact?: { email?: string; phone?: string; name?: string };
+  contact?: HandoffContact;
   /** Overrides, for tests and for hosts outside a browser. */
   page?: { url: string; title: string; entity?: string };
   locale?: string;
@@ -148,8 +197,8 @@ export function buildEnvelope(input: EnvelopeInput): HandoffEnvelope {
   };
   if (input.facts?.length) envelope.facts = input.facts;
   if (input.transcript?.length) envelope.transcript = input.transcript;
-  const contact = input.contact && Object.fromEntries(Object.entries(input.contact).filter(([, v]) => !!v));
-  if (contact && Object.keys(contact).length) envelope.contact = contact;
+  const contact = readContact(input.contact);
+  if (contact) envelope.contact = contact;
   envelope.consent.shared = Object.keys(envelope).filter((k) => k !== 'consent' && k !== 'returnTo' && k !== 'locale' && k !== 'ui');
   return envelope;
 }
@@ -196,8 +245,24 @@ export function extensionData(part: A2APart): (Record<string, unknown> & { hando
   // Marked parts are ours; an unmarked one with the same shape is accepted too, since some servers
   // drop part metadata, but only for the kinds we define.
   const marked = part.metadata?.extension === HANDOFF_EXTENSION;
-  if (!marked && !['queue', 'operator', 'handback', 'answer'].includes(data.handoff)) return null;
+  if (!marked && !['queue', 'operator', 'handback', 'answer', 'surface'].includes(data.handoff)) return null;
   return data as Record<string, unknown> & { handoff: string };
+}
+
+/**
+ * A hand-back's `next`, read strictly: `target`, `reason` and `summary`, each a string, trimmed, without control
+ * characters, not empty, and at most 64, 200 and 1,000 characters. Null when any of them isn't.
+ */
+function readNext(v: unknown): HandBack['next'] | null {
+  if (!v || typeof v !== 'object') return null;
+  const out: Record<string, string> = {};
+  for (const [k, max] of [['target', 64], ['reason', 200], ['summary', 1000]] as const) {
+    const x = (v as Record<string, unknown>)[k];
+    const t = typeof x === 'string' ? x.replace(/[\u0000-\u001f\u007f]+/g, ' ').trim() : '';
+    if (!t || t.length > max) return null;
+    out[k] = t;
+  }
+  return out as HandBack['next'];
 }
 
 /** A `handback` part's contents, tidied, or null. */
@@ -211,9 +276,23 @@ export function readHandBack(parts: A2APart[] = []): HandBack | null {
           .filter((r) => r && r.value !== undefined && r.value !== null && String(r.value).trim())
           .map((r) => ({ label: String(r.label ?? 'Reference'), value: String(r.value) }))
       : [];
-    return { outcome, note: String(data.note ?? '').trim(), references };
+    const contact = readContact(data.contact);
+    const next = readNext(data.next);
+    return { outcome, note: String(data.note ?? '').trim(), references, ...(contact ? { contact } : {}), ...(next ? { next } : {}) };
   }
   return null;
+}
+
+/**
+ * The A2UI messages of a message's `surface` parts, as sent: the step surfaces chunk reads them strictly
+ * (`a2ui/steps.ts`) before anything is kept or drawn. Null when there are none.
+ */
+export function readSurface(parts: A2APart[] = []): unknown[] | null {
+  const out = parts.flatMap((p) => {
+    const data = extensionData(p);
+    return data?.handoff === 'surface' && Array.isArray(data.messages) ? data.messages : [];
+  });
+  return out.length ? out : null;
 }
 
 /** A `queue` part's position and wait, or null. */
@@ -346,7 +425,7 @@ const STRING_FIELDS = ['name', 'headline', 'url', 'datePublished', 'dateModified
 const DATA_FIELDS = ['publisher', 'author', 'image', 'thumbnailUrl'] as const;
 
 /** One card as sent, tidied, or null when it has no `@id` or `@type`. */
-function readCard(v: unknown): CardRecord | null {
+export function readCard(v: unknown): CardRecord | null {
   if (!v || typeof v !== 'object' || Array.isArray(v)) return null;
   const o = v as Record<string, unknown>;
   const id = text(o['@id']);

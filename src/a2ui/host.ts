@@ -13,13 +13,25 @@
 
 // First and last, around @a2ui/lit: a second copy of the harness on the page skips its elements instead of throwing.
 import './define-once.js';
-import { MessageProcessor } from '@a2ui/web_core/v0_9';
-import { basicCatalog } from '@a2ui/lit/v0_9';
+import { MessageProcessor, Catalog, BASIC_FUNCTIONS } from '@a2ui/web_core/v0_9';
+import { basicCatalog, A2uiLitElement, A2uiController } from '@a2ui/lit/v0_9';
 import '@a2ui/lit/v0_9';
 import './define-restore.js';
+import { html, nothing, unsafeCSS } from 'lit';
+import { z } from 'zod';
 
 import type { A2uiMessage } from './emit.js';
 import { toV09 } from './to-v09.js';
+
+/** No theme on the surfaces drawn here: the element's tokens (its accent) style them, and an inline primary color would win. */
+const NO_THEME = { primaryColor: null };
+import type { StepsKit } from './steps-catalog.js';
+
+/**
+ * What the steps catalog (a target's step surfaces, `steps-catalog.ts`) is built from. Handed to its lazy chunk
+ * rather than imported there, so the renderer, Lit and zod stay in one chunk with the rest of the page-load code.
+ */
+export const stepsKit: StepsKit = { A2uiLitElement, A2uiController, Catalog, basicCatalog, functions: BASIC_FUNCTIONS as any[], z, html, unsafeCSS, nothing };
 
 /** A live A2UI surface, and the handle used to tear it down. */
 export interface MountedSurface {
@@ -39,18 +51,20 @@ export interface MountedSurface {
  *
  * @param onAction - Called when the renderer dispatches a button action. The
  * event carries whatever `action.event.context` the emitter attached.
+ * @param catalog - What the surface is drawn with: the basic catalog, or the steps catalog.
  */
 export function mountSurface(
   container: HTMLElement,
   messages: A2uiMessage[],
   onAction?: (event: any) => void,
+  catalog: unknown = basicCatalog,
 ): MountedSurface | null {
   const processor = new MessageProcessor(
-    [basicCatalog as any],
+    [catalog as any],
     (event: any) => onAction?.(event),
   );
 
-  processor.processMessages(toV09(messages) as any);
+  processor.processMessages(toV09(messages, NO_THEME) as any);
 
   // One surface per mount; the first is the one just created.
   const first = processor.model.surfacesMap.entries().next();
@@ -67,7 +81,7 @@ export function mountSurface(
     // DataModel exposes get(path); reading the surface's own model avoids
     // depending on the sendDataModel flag that getClientDataModel requires.
     read: (key: string) => (surface as any)?.dataModel?.get(`/${key}`),
-    send: (msgs: A2uiMessage[]) => processor.processMessages(toV09(msgs) as any),
+    send: (msgs: A2uiMessage[]) => processor.processMessages(toV09(msgs, NO_THEME) as any),
     dispose: () => {
       element.remove();
       (processor as any).dispose?.();

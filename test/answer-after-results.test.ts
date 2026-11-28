@@ -123,6 +123,13 @@ describe('"What are your hours?"', () => {
     expect(answering).toContain('"opens":"07:00"');
     expect(answering).toContain('Riverside Emergency Line');
   });
+
+  it('says the records\' hours in 12-hour time after the result, each by name, the round-the-clock ones as 24 hours', async () => {
+    const s = setup([query(), { text: HOURS }]);
+    await s.harness.turn('What are your hours?', s.messages as never);
+    const answering = s.seen[1].messages.at(-1)!.content;
+    expect(answering).toContain('(Hours in 12-hour time: Riverside North (Plumber): Monday to Saturday 7 a.m. to 7 p.m., Sunday closed; Riverside Emergency Line (Emergency service): 24 hours, every day)');
+  });
 });
 
 describe('a type listing', () => {

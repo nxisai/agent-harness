@@ -28,6 +28,8 @@ export interface LinkPolicy {
   here?: string;
   /** Other origins the page allows links to (`https://help.example.com`), from the element's `link-origins`. */
   origins?: readonly string[];
+  /** The guardrails' navigation check, inside the tap: whether a link may open (another origin is confirmed). */
+  allow?: (url: string) => boolean;
 }
 
 /** Video sites a cited video's Watch may link out to, when the site hosts its videos there. */
@@ -215,7 +217,8 @@ export function linkNodes(text: string, policy: LinkPolicy = {}, visit?: (url: s
   return out;
 }
 
-function anchor(href: string, label: string, policy: LinkPolicy, visit?: (url: string, label: string) => void): HTMLAnchorElement {
+/** A link the page allows, opening as {@link openWay} says, past {@link LinkPolicy.allow} when there is one. */
+export function anchor(href: string, label: string, policy: LinkPolicy, visit?: (url: string, label: string) => void): HTMLAnchorElement {
   const a = document.createElement('a');
   a.className = 'remote-link';
   a.href = href;
@@ -226,6 +229,7 @@ function anchor(href: string, label: string, policy: LinkPolicy, visit?: (url: s
     a.rel = 'noopener noreferrer';
   }
   a.addEventListener('click', (e) => {
+    if (!e.defaultPrevented && policy.allow && !policy.allow(href)) return e.preventDefault();
     if (way !== 'same-site' || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     visit?.(href, label);
   });

@@ -70,7 +70,8 @@ function bindStrings(value: unknown): unknown {
  * @returns The equivalent v0.9 messages, which may be more numerous because a
  * v1.0 surface creation splits into separate component and data updates.
  */
-export function toV09(messages: A2uiMessage[]): Msg[] {
+export function toV09(messages: A2uiMessage[], opts: { primaryColor?: string | null } = {}): Msg[] {
+  const primary = opts.primaryColor === undefined ? NXIS_PRIMARY : opts.primaryColor;
   const out: Msg[] = [];
 
   for (const msg of messages as unknown as Msg[]) {
@@ -80,13 +81,15 @@ export function toV09(messages: A2uiMessage[]): Msg[] {
       // `theme` exists in v0.9 and was dropped in v1.0, so it is set here
       // rather than in the emitters, which must stay v1.0-valid. The CSS
       // custom properties do the real styling; this carries the accent for any
-      // renderer that never sees our stylesheet.
+      // renderer that never sees our stylesheet. The element's own surfaces pass
+      // none: the renderer sets it inline on each component, over the page's
+      // accent (a site's brand color), so its primary buttons stayed blue.
       out.push({
         version: 'v0.9',
         createSurface: {
           surfaceId,
           catalogId: downgradeCatalog(catalogId),
-          theme: { primaryColor: NXIS_PRIMARY },
+          ...(primary ? { theme: { primaryColor: primary } } : {}),
         },
       });
 

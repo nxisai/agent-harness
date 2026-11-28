@@ -19,6 +19,8 @@ export { emitResultsSurface } from './results.js';
 export { emitEventsSurface, emitEventSurface, type EventButtonData } from './events.js';
 export type { ResultCardData, CardRow, CardTag, MediaButtonData, MediaRowData, MediaGroupData, CanPlay } from './cards.js';
 export { mountSurface } from './host.js';
+export { STEPS_CATALOG, STEP_COMPONENTS, BASIC_ALLOWED, PAGE_EVENTS, LIMITS as SURFACE_LIMITS, readSurfaceMessages, surfaceIdOf, fold as foldSurface } from './steps.js';
+export type { SurfaceAction, SurfaceEntry, ConfirmRow } from './steps.js';
 export type { MountedSurface } from './host.js';
 export { toV09 } from './to-v09.js';
 export { A2UI_THEME_CSS, NXIS_PRIMARY } from './theme.js';

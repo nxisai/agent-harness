@@ -19,6 +19,7 @@ export type {
   A2ATaskStatus,
 } from './a2a.js';
 export {
+  CONTACT_FIELDS,
   HANDOFF_EXTENSION,
   HANDOFF_UI,
   MAX_ANSWER_CARDS,
@@ -28,12 +29,13 @@ export {
   feedbackMessage,
   pageEntity,
   readAnswer,
+  readContact,
   readHandBack,
   readOperator,
   readQueue,
   readableText,
 } from './envelope.js';
-export type { AnswerCite, CardFocus, CardRecord, EnvelopeInput, FeedbackValue, HandBack, HandoffAnswer, HandoffEnvelope, HandoffUi } from './envelope.js';
+export type { AnswerCite, CardFocus, CardRecord, EnvelopeInput, FeedbackValue, HandBack, HandoffAnswer, HandoffContact, HandoffEnvelope, HandoffUi } from './envelope.js';
 export { HANDOFF_KEY_HEADER, HandoffController, handoffActivity, isHandoffOver } from './controller.js';
 export type {
   HandoffActivity,

@@ -28,7 +28,7 @@
  * @module
  */
 import type { CardButton } from '../harness/cta.js';
-import type { HandoffAnswer } from '../handoff/envelope.js';
+import type { AnswerCite, CardRecord, HandoffAnswer } from '../handoff/envelope.js';
 import type { OpenWay } from '../harness/tools/open-target.js';
 import type { AnswerHandlers, CiteView } from './result-pick.js';
 
@@ -78,7 +78,9 @@ function cardOf(answer: HandoffAnswer, id: string, record?: string): number {
 export function sourceOrder(answer: HandoffAnswer, text: string): SourceOrder {
   const marks: SourceOrder['marks'] = [];
   let cursor = 0;
-  for (const [i, claim] of (answer.claims ?? []).entries()) {
+  for (const [i, said] of (answer.claims ?? []).entries()) {
+    // The reply is drawn as markdown, so a claim is looked for as it reads: no `**`, backticks or link syntax.
+    const claim = said.replace(/\*\*|__|`/g, '').replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
     const cards = [...new Set(answer.cites.filter((c) => c.claim === i).map((c) => cardOf(answer, c.id, c.record)).filter((n) => n >= 0))];
     const span = claim && cards.length ? find(text, claim, cursor) : null;
     if (!span) continue;
@@ -94,6 +96,88 @@ export function sourceOrder(answer: HandoffAnswer, text: string): SourceOrder {
   const numbers: number[] = [];
   order.forEach((card, n) => (numbers[card] = n + 1));
   return { marks, order, numbers };
+}
+
+/**
+ * A record the page assistant read in a turn, kept with its reply: its card, and the words that name it in a reply
+ * (its name, phone number, street address).
+ */
+export interface LocalSource {
+  card: CardRecord;
+  keys: string[];
+  /**
+   * Words that name it less surely, matched only when no record's own `keys` do: the places it serves (`areaServed`,
+   * `serviceArea`), and the phone it gives for its seller or provider. A reply that says "we serve Norridge" cites the
+   * record that says so.
+   */
+  more?: string[];
+  /** Its opening hours as a reply says them ("7 a.m. to 6 p.m.", "24 hours"): a line giving hours cites the record they are from. */
+  hours?: string[];
+}
+
+/** A line that gives hours: a time of day, or round-the-clock. */
+const TIMED = /\b\d{1,2}(?::\d{2})? ?[ap]\.?m\b|\bnoon\b|\b24 hours\b|\b24\/7\b/i;
+
+/** Where `key` is in `line` as whole words (case aside), or a phone number's digits in the line's. */
+function names(line: string, key: string): boolean {
+  if (/^\+?[\d\s().-]{7,}$/.test(key)) {
+    const digits = key.replace(/\D/g, '');
+    return digits.length >= 7 && line.replace(/\D/g, '').includes(digits);
+  }
+  const l = line.toLowerCase();
+  const k = key.toLowerCase();
+  for (let i = l.indexOf(k); i >= 0; i = l.indexOf(k, i + 1)) {
+    if (!/\w/.test(l[i - 1] ?? '') && !/\w/.test(l[i + k.length] ?? '')) return true;
+  }
+  return false;
+}
+
+/**
+ * The page assistant's reply as an answer with sources, from the records it read in the turn, without asking the
+ * model anything: each line or sentence that names a record (by name, phone number or street address) is a claim
+ * citing it. A key several records share cites the first; a name inside a longer one that also matches (the
+ * business, and its Park Ridge branch) cites the longer; records of one name and type are listed once. Null when the
+ * reply names none of them.
+ *
+ * @param text - The reply as the bubble shows it (`textContent`, after markdown).
+ */
+export function localAnswer(text: string, sources: readonly LocalSource[]): HandoffAnswer | null {
+  const owner = new Map<string, number>();
+  const own = (keys: string[] | undefined, i: number) => keys?.forEach((k) => k.trim().length >= 4 && !owner.has(k.toLowerCase()) && owner.set(k.toLowerCase(), i));
+  sources.forEach((s, i) => own(s.keys, i));
+  const less = new Set<string>();
+  sources.forEach((s) => s.more?.forEach((k) => !owner.has(k.toLowerCase()) && less.add(k.toLowerCase())));
+  sources.forEach((s, i) => own(s.more, i));
+  const hours = new Map<string, number>();
+  sources.forEach((s, i) => s.hours?.forEach((k) => !hours.has(k.toLowerCase()) && hours.set(k.toLowerCase(), i)));
+  const claims: string[] = [];
+  const cites: AnswerCite[] = [];
+  const cards: CardRecord[] = [];
+  for (const line of text.split('\n')) {
+    for (const part of line.replace(/([a-z0-9)][.!?])\s+(?=[A-Z(])/g, '$1\u0000').split('\u0000')) {
+      const claim = part.trim();
+      if (!claim) continue;
+      // Hours cite the record they are from, and only that: never one that names a place or the business alone.
+      const timed = TIMED.test(claim);
+      const from = timed ? [...hours.keys()].filter((k) => names(claim, k)).map((k) => hours.get(k)!) : [];
+      const hit = [...owner.keys()].filter((k) => names(claim, k) && !(timed && less.has(k)));
+      const keys = hit.filter((k) => !hit.some((o) => o !== k && o.includes(k)));
+      const found = [...new Set(from.length ? from : keys.map((k) => owner.get(k)!))].slice(0, 3);
+      if (!found.length) continue;
+      const n = claims.push(claim) - 1;
+      for (const i of found) {
+        // Two records of one name and type (the business, as two records) are one source to the visitor.
+        const own = sources[i].card;
+        const card = cards.find((c) => c === own || (!!c.name && c.name === own.name && String(c['@type']) === String(own['@type']))) ?? own;
+        if (!cards.includes(card)) {
+          if (cards.length >= 12) continue;
+          cards.push(card);
+        }
+        if (!cites.some((c) => c.claim === n && c.id === card['@id'])) cites.push({ claim: n, id: card['@id'] });
+      }
+    }
+  }
+  return cards.length ? { answerId: '', cards, cites, claims } : null;
 }
 
 /** "step 3", "steps 3–5", "steps 2, 6": the steps of a how-to the answer cites, from the cites' paths. */
@@ -137,6 +221,7 @@ export const SOURCES_CSS = `
 .ra-mark { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 3px; box-sizing: border-box; border: 0; border-radius: 9px; background: var(--s-pill); color: var(--s-strong); font: 600 11px/1 var(--sans); vertical-align: 1px; cursor: pointer; }
 .ra-mark:hover { background: var(--s-strong); color: var(--s-bg); }
 .ra-src { margin: 12px -14px -10px; padding: 12px 14px; border-top: 1px solid var(--s-line); background: var(--s-bg); white-space: normal; display: flex; flex-direction: column; gap: 6px; }
+.ra-src.ra-src-below { margin: 8px 0 0; padding: 10px 12px; border: 1px solid var(--border); border-radius: 12px; --s-bg: var(--bg); --s-ink: var(--ink); --s-ink-2: var(--ink-2); --s-line: var(--border); --s-blue: var(--blue); --s-strong: var(--blue-strong); --s-pill: color-mix(in srgb, var(--s-blue) 16%, var(--s-bg)); }
 .ra-src-h { margin: 0; font: 600 11px var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--s-ink-2); }
 .ra-src ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
 .ra-srow { display: flex; align-items: flex-start; gap: 10px; margin: 0 -6px; padding: 5px 6px; border-radius: 8px; color: var(--s-ink); text-decoration: none; transition: background .2s; }
@@ -165,6 +250,8 @@ export interface SourcesHost {
   openWay(url: string): OpenWay;
   /** The cards for an answer's sources, as the card view draws them. */
   citeCards(cards: CiteView[], handlers: AnswerHandlers): HTMLElement;
+  /** A step card the answer came with (an estimate): the Sources list goes after it, on its own, not in the bubble. */
+  below?: HTMLElement;
 }
 
 /** The text nodes under `root`, in order, each with where it starts in `root`'s text. */
@@ -273,13 +360,18 @@ export function paintSources(bubble: HTMLElement, answer: HandoffAnswer, host: S
       group.append(mark);
     }
     const tail = hit.node.splitText(m.at - hit.start);
-    // Never inside a link: a button in an anchor is two controls in one.
+    // Never inside a link: a button in an anchor is two controls in one. At the end of bold or code, after it.
     const link = (hit.node.parentElement?.closest('a') ?? null) as HTMLElement | null;
+    const end = !tail.data && hit.node.parentElement?.matches('strong,em,code') && hit.node.parentElement.lastChild === tail ? hit.node.parentElement : null;
     if (link && bubble.contains(link)) link.after(group);
+    else if (end) end.after(group);
     else tail.before(group);
   }
   bubble.classList.add('has-sources');
-  bubble.append(section);
+  if (host.below?.isConnected) {
+    section.classList.add('ra-src-below');
+    host.below.after(section);
+  } else bubble.append(section);
 
   // The cards that are content, not only a source: a video or a clip, and a profile, with their numbers.
   const content = order.filter((i) => host.views[i] && !host.views[i].compact && (host.views[i].archetype === 'media' || host.views[i].archetype === 'profile'));

@@ -20,6 +20,7 @@ import {
   isTerminal,
   normaliseResponse,
   type A2AMessage,
+  type A2APart,
   type A2AStream,
   type A2AStreamResponse,
   type A2ATask,
@@ -34,6 +35,7 @@ import {
   readOperator,
   readQueue,
   readAnswer,
+  readSurface,
   readableText,
   visitorMessage,
   type FeedbackValue,
@@ -172,6 +174,8 @@ export type HandoffEvent =
       text: string;
       /** The cards for the answer's sources, when the target sent an `answer` part. */
       answer?: HandoffAnswer;
+      /** A2UI messages for its step surfaces, as sent, when it sent `surface` parts. */
+      surface?: unknown[];
     }
   | { type: 'handback'; conversationId: string; session: HandoffSession; handBack: HandBack };
 
@@ -244,8 +248,20 @@ function describeFailure(err: unknown, label: string): string {
     }
     if (err.status === 404) return `${label} isn't available on this site.`;
     if (err.status === 403) return `This conversation can't reach ${label} from here.`;
+    if (err.code === ENDED) return `The conversation with ${label} has ended.`;
   }
   return `I couldn't reach ${label}.`;
+}
+
+/**
+ * A2A's UnsupportedOperationError: what a target answers about a task that has
+ * already ended, and is no longer streamed or written to.
+ */
+const ENDED = -32004;
+
+/** A refusal the relay made before the target was asked: nothing a read of the task would change. */
+function refusedOutright(err: unknown): boolean {
+  return err instanceof A2AError && (err.status === 403 || err.status === 404 || err.status === 429);
 }
 
 /** Runs handoffs for every conversation on the page. Dispatches `handoff` events. */
@@ -393,13 +409,15 @@ export class HandoffController extends EventTarget {
   /**
    * Send what the visitor typed to the target handling this conversation.
    *
+   * @param parts - Extension parts to send with it: an `action` part, for a choice made on one of its surfaces.
    * @throws When nothing is handed off, or the target hasn't answered yet.
    */
-  async send(conversationId: string, text: string): Promise<void> {
+  async send(conversationId: string, text: string, parts: A2APart[] = []): Promise<void> {
     const session = this.active(conversationId);
     if (!session) throw new Error('This conversation is not handed off.');
     if (!session.taskId && !session.contextId) throw new Error(`Still connecting to ${session.label}.`);
     const message = visitorMessage(text, { taskId: session.taskId, contextId: session.contextId });
+    message.parts.push(...parts);
     this.remember(session, message.messageId);
     const abort = this.openLive(conversationId);
     try {
@@ -412,6 +430,9 @@ export class HandoffController extends EventTarget {
     } catch (err) {
       if (abort.signal.aborted) return;
       this.live.delete(conversationId);
+      // The target may have ended the task first (a team closing the thread seconds after it opened): read it, and
+      // show how it ended. Only a task that can't be read is a failure to reach it.
+      if (!refusedOutright(err) && (await this.settle(session))) return;
       session.error = describeFailure(err, session.label);
       this.setState(session, 'failed');
       throw err;
@@ -553,18 +574,25 @@ export class HandoffController extends EventTarget {
     // Progress is what the visitor would notice: a new message, a new state. A resubscribe that only
     // repeats the task as it stood is not progress, and must back off like an empty one.
     const before = this.reported;
+    let got = 0;
+    let broke = false;
     try {
       for await (const event of stream.events) {
         if (abort.signal.aborted) return;
+        got++;
         this.apply(session, event);
       }
     } catch (err) {
       if (abort.signal.aborted) return;
+      broke = true;
       console.warn(`[nxis-handoff] stream from ${session.label} broke:`, err);
     }
     if (abort.signal.aborted) return;
     if (this.live.get(id) === abort) this.live.delete(id);
     if (isHandoffOver(session.state)) return;
+    // A stream that brought nothing, or broke, may be about a task that already ended: read it before going on.
+    if ((got === 0 || broke) && (await this.settle(session))) return;
+    if (abort.signal.aborted || this.live.has(id)) return;
     // Waiting on the visitor: their next message opens the next stream.
     if (session.state === 'awaiting-visitor' && session.kind === 'agent') return;
 
@@ -586,13 +614,7 @@ export class HandoffController extends EventTarget {
   private async readOnce(session: HandoffSession): Promise<void> {
     if (!session.taskId) return;
     try {
-      const { result } = await this.client(session.target).call<A2ATask | { task: A2ATask }>(
-        'GetTask',
-        { id: session.taskId, historyLength: 50 },
-        { headers: this.keyHeader(session) },
-      );
-      const task = (result as { task?: A2ATask }).task ?? (result as A2ATask);
-      this.apply(session, { task });
+      this.apply(session, await this.getTask(session));
     } catch (err) {
       session.error =
         err instanceof A2AError && (err.status === 403 || err.status === 404)
@@ -600,6 +622,34 @@ export class HandoffController extends EventTarget {
           : describeFailure(err, session.label);
       this.setState(session, 'failed');
     }
+  }
+
+  /**
+   * Read the task once more, quietly, after a stream that ended empty or a
+   * refusal: a task that has ended is shown as it ended, with the target's
+   * last words and hand-back. Never fails the handoff itself.
+   *
+   * @returns Whether the handoff is now over.
+   */
+  private async settle(session: HandoffSession): Promise<boolean> {
+    try {
+      const read = session.taskId ? await this.getTask(session) : {};
+      if (!read.task?.status || !isTerminal(read.task.status.state)) return false;
+      this.apply(session, read);
+    } catch {
+      return false;
+    }
+    return isHandoffOver(session.state);
+  }
+
+  /** The task, read once: `GetTask`'s answer, bare or wrapped, as a stream event. */
+  private async getTask(session: HandoffSession): Promise<A2AStreamResponse> {
+    const { result } = await this.client(session.target).call<A2ATask | { task: A2ATask }>(
+      'GetTask',
+      { id: session.taskId, historyLength: 50 },
+      { headers: this.keyHeader(session) },
+    );
+    return normaliseResponse(result as unknown as Record<string, unknown>);
   }
 
   // ── Events ─────────────────────────────────────────────────────────────────
@@ -707,8 +757,9 @@ export class HandoffController extends EventTarget {
     const handBack = readHandBack(parts);
     const text = readableText(parts);
     const answer = readAnswer(parts);
+    const surface = readSurface(parts);
     // The last words first, then what they hand back: the references follow the goodbye.
-    if (text || answer) {
+    if (text || answer || surface) {
       this.emit({
         type: 'message',
         conversationId: session.conversationId,
@@ -717,6 +768,7 @@ export class HandoffController extends EventTarget {
         fromKind: operator?.kind ?? session.kind,
         text,
         ...(answer ? { answer } : {}),
+        ...(surface ? { surface } : {}),
       });
     }
     if (handBack && !session.handBack) {

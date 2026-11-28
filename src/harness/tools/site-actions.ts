@@ -33,6 +33,8 @@ const MAX_PAGES = 10;
 /** How long a fetched list is reused across page loads in the same tab. */
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const CACHE_PREFIX = 'nxis:site-actions:v1:';
+/** Set once the skipped actions have been logged in this tab, so the note isn't repeated on every page. */
+const SKIPPED_PREFIX = 'nxis:site-actions-skipped:';
 
 const VALUE_TYPES: readonly NxisValueType[] = ['string', 'number', 'integer', 'boolean', 'date', 'file'];
 
@@ -195,6 +197,35 @@ function onOrigin(action: NxisAction, origin: string): boolean {
   } catch {
     return false;
   }
+}
+
+/** The origin of an action's page, or '' when it names none or one that can't be read. */
+function pageOrigin(action: NxisAction): string {
+  try {
+    return new URL(action.target['nxis:pageUrl'] ?? '').origin;
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Say, once a tab session, at debug level, which site actions this origin can't run. It is expected, not a fault: a
+ * site's records can hold actions whose form is on another host, or that have no page (one a hosted agent answers).
+ */
+function noteSkipped(storage: Storage | null, key: string, skipped: string[]): void {
+  const told = SKIPPED_PREFIX + key;
+  try {
+    if (storage?.getItem(told)) return;
+    storage?.setItem(told, '1');
+  } catch {
+    // Blocked storage: said on each load, at debug level still.
+  }
+  const elsewhere = [...new Set(skipped.filter(Boolean))];
+  const pageless = skipped.filter((o) => !o).length;
+  console.debug(
+    `[nxis] skipped ${skipped.length} site action(s) this page can't run: ` +
+      [elsewhere.length ? `a page on ${elsewhere.join(', ')}` : '', pageless ? `${pageless} with no page` : ''].filter(Boolean).join('; '),
+  );
 }
 
 /**
@@ -405,22 +436,19 @@ export async function loadSiteActions(
 
   const seen = new Set<string>();
   const actions: NxisAction[] = [];
-  let offOrigin = 0;
+  // Skipped: the origins of pages elsewhere, and '' for an action with no page.
+  const skipped: string[] = [];
   for (const record of await queryTypedRecords(client, 'Action')) {
     const action = parseAction(record);
     if (!action || seen.has(action['@id'])) continue;
     seen.add(action['@id']);
     if (!onOrigin(action, origin)) {
-      offOrigin++;
+      skipped.push(pageOrigin(action));
       continue;
     }
     actions.push(action);
   }
-  if (offOrigin) {
-    console.warn(
-      `[nxis] ignored ${offOrigin} site action(s) whose page is not on ${origin}`,
-    );
-  }
+  if (skipped.length) noteSkipped(storage, key, skipped);
 
   writeCache(storage, key, { fetchedAt: now, actions });
   return actions;

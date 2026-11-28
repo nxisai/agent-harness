@@ -65,8 +65,10 @@ export function attach(g: Guardrails, src: string, kit: MergeKit): Promise<void>
           // Not cached: fetched whole next time.
         }
       } else throw new Error(`${src} answered ${res.status}`);
-      const p = parsePolicy(body);
+      const raw = JSON.parse(body);
+      const p = parsePolicy(raw);
       policy = p;
+      hook.openingHours = raw.openingHours;
       hook.version = p.version;
       hook.held = p.prompt === 'proxy';
     } catch (err) {

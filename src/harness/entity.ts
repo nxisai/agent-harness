@@ -408,3 +408,37 @@ export function reviewFacts(record: Obj): string[] {
   const body = str(record.reviewBody);
   return [by ? `By ${by}` : undefined, body ? `“${body}”` : undefined].filter((l): l is string => !!l);
 }
+
+/**
+ * Records drawn once each: a site's records can list one business once per page it is on, and records of one name,
+ * type and address are one thing to a visitor. `keep` is the first of each, in order; `at[i]` is where record `i`
+ * is in `keep` (its own place, or the place of the one it repeats). A record with no name is always kept.
+ */
+export function onceEach(records: readonly unknown[]): { keep: number[]; at: number[] } {
+  const first = new Map<string, number>();
+  const keep: number[] = [];
+  const at = records.map((r, i) => {
+    const name = String(list(prop(r, 'name'))[0] ?? '').trim().toLowerCase();
+    const a = list(prop(r, 'address'))[0];
+    const addr = isObj(a) ? ['streetAddress', 'addressLocality', 'postalCode'].map((k) => String(prop(a, k) ?? '')).join('|') : String(a ?? '');
+    const key = `${name}\n${typesOf(r).sort().join(',')}\n${addr.toLowerCase().replace(/\s+/g, ' ').trim()}`;
+    if (name && first.has(key)) return first.get(key)!;
+    if (name) first.set(key, keep.length);
+    return keep.push(i) - 1;
+  });
+  return { keep, at };
+}
+
+/**
+ * A phone number as a `tel:` link, in E.164 where the country can be told: `tel:+17735550142` for "(773) 555-0142".
+ * A number with its own "+" keeps it; a 10-digit number (or 11 starting with 1) is North American; any other is
+ * dialed as written. Undefined when it isn't a number.
+ */
+export function telHref(phone: unknown): string | undefined {
+  const d = String(phone ?? '').replace(/[^\d+]/g, '');
+  if (!/^\+?\d{7,15}$/.test(d)) return undefined;
+  if (d[0] === '+') return `tel:${d}`;
+  if (/^[2-9]\d{9}$/.test(d)) return `tel:+1${d}`;
+  if (/^1[2-9]\d{9}$/.test(d)) return `tel:+${d}`;
+  return `tel:${d}`;
+}

@@ -105,7 +105,7 @@ describe('the answer part', () => {
 describe('the envelope', () => {
   it('declares that this page draws answer cards, and does not list it as shared', () => {
     const env = buildEnvelope({ target: 'support', reason: 'r', summary: 's', conversationId: 'c', page: { url: HERE, title: 'Filters' }, locale: 'en', origin: 'https://help.example' });
-    expect(env.ui).toEqual({ cards: 2, feedback: 1 });
+    expect(env.ui).toEqual({ cards: 2, feedback: 1, surfaces: 3 });
     expect(env.consent.shared).not.toContain('ui');
   });
 });

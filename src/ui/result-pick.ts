@@ -12,7 +12,7 @@
  *
  * @module
  */
-import type { Archetype, MediaKind } from '../harness/entity.js';
+import { telHref, type Archetype, type MediaKind } from '../harness/entity.js';
 import type { ResultPick } from '../harness/recommend.js';
 import type { CardButton, CardCtas } from '../harness/cta.js';
 import { mediaLine, seriesHeadings, SERIES_PARTS_SHOWN, type MediaRow, type SeriesCard } from '../harness/media.js';
@@ -355,7 +355,7 @@ function actions(c: AnswerCard, handlers: AnswerHandlers, primary: boolean): HTM
     row.append(...[ctaButton(ctas.lead, name, handlers, primary ? 'primary' : ''), ctas.secondary && ctaButton(ctas.secondary, c.title, handlers)].filter((b): b is HTMLElement => !!b));
     return row;
   }
-  const tel = c.phone ? c.phone.replace(/[^\d+]/g, '') : '';
+  const tel = telHref(c.phone);
   const arch = c.archetype ?? 'place';
   const ask = (label: string, message: string) => {
     const b = h('button', { type: 'button', class: 'ra-btn' }, label);
@@ -363,7 +363,7 @@ function actions(c: AnswerCard, handlers: AnswerHandlers, primary: boolean): HTM
     return b;
   };
   const buttons: HTMLElement[] = [];
-  const call: HTMLElement | null = tel ? h('a', { class: 'ra-btn', href: `tel:${tel}` }, `Call ${c.phone}`) : null;
+  const call: HTMLElement | null = tel ? h('a', { class: 'ra-btn', href: tel }, `Call ${c.phone}`) : null;
   const form: HTMLElement | null = c.form ? ask(c.form.label, c.form.message) : null;
   if (arch === 'opinion') {
     if (c.about) buttons.push(ask(`More about ${c.about}`, `Tell me about ${c.about}`));

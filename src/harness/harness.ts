@@ -47,7 +47,7 @@ import { decide, policyFor, toolOrigins, type Decision } from './policy.js';
 import { buildPlan } from './plan.js';
 import { resolveSlots, summarySlots, type Resolution } from './slots.js';
 import { beginJourney, journeySteps, recordStep, type AgentStep } from './steps.js';
-import { extractRecords } from './records.js';
+import { extractRecords, hoursNote } from './records.js';
 import { recommend, type ResultPick } from './recommend.js';
 import { HANDOFF_SESSION_RESULT, TALK_TO_A_PERSON_TOOL, isHandoffTool, refreshHandoffTools } from '../handoff/tools.js';
 import { handoffCallFor, listedTargets, takingNow, handoffToolFor, pageFormTakenBy, standInFor, takerOf } from '../handoff/takes.js';
@@ -1208,7 +1208,7 @@ export class AgentHarness {
         values: resolution.values,
         ...handoffPrompt(tool, resolution.values),
         onSubmit: this.approved(tool, messages, standIn),
-        onCancel: () => this.cancel(),
+        onCancel: () => this.cancel(tool, messages),
         onEdit: () => this.askAll(tool, resolution, messages, standIn),
       });
       return { decision, tool, values: resolution.values };
@@ -1253,14 +1253,14 @@ export class AgentHarness {
             values,
             ...handoffPrompt(tool, values),
             onSubmit: this.approved(tool, messages, standIn),
-            onCancel: () => this.cancel(),
+            onCancel: () => this.cancel(tool, messages),
             onEdit: () => this.askAll(tool, resolution, messages, standIn),
           });
         } else {
           this.runAndAnswer(tool, values, messages, standIn);
         }
       },
-      onCancel: () => this.cancel(),
+      onCancel: () => this.cancel(tool, messages),
     });
     return { decision, tool, values: resolution.values };
   }
@@ -1304,7 +1304,7 @@ export class AgentHarness {
       plan: buildPlan(editable, false),
       resolution,
       onComplete: (answers) => this.approved(tool, messages, standIn)({ ...resolution.values, ...answers }),
-      onCancel: () => this.cancel(),
+      onCancel: () => this.cancel(tool, messages),
     });
   }
 
@@ -1349,8 +1349,15 @@ export class AgentHarness {
     }
   }
 
-  /** Discard a live prompt and the values typed into it. */
-  private cancel(): void {
+  /**
+   * Discard a live prompt and the values typed into it. The model reads that nothing was sent: without it, a declined
+   * handoff (Not now) read as made, and a later reply said a note had been passed on.
+   */
+  private cancel(tool?: ModelContextToolInfo, messages?: ChatMessage[]): void {
+    if (tool && messages) {
+      messages.push({ role: 'user', content: `[${tool.name} was not sent]`, data: 'The visitor pressed Not now (or Cancel) on the card, so nothing was sent or handed over. Never say it was. If they still want it, call the tool again.' });
+      this.opts.onMessages?.(messages);
+    }
     // A journey that stops here should say so, not sit waiting for a press
     // that will never come.
     this.emitStep({ id: 'submit', label: 'Cancelled', status: 'failed' });
@@ -1515,7 +1522,8 @@ export class AgentHarness {
           content: isTypeListing(tool.name)
             ? `[${tool.name} returned the kinds of records this site has. To answer, search them with nxis_query next, unless the visitor asked what kinds there are]`
             : `[${tool.name} returned]`,
-          data: text.slice(0, RESULT_CHARS) + (picked ? `\n(You recommended ${picked.name}: ${picked.pick.reasons.join(' ')})` : ''),
+          // The records' hours said in 12-hour time, so an answer never reads them off as "07:00 to 18:00".
+          data: text.slice(0, RESULT_CHARS) + hoursNote(extractRecords(res)) + (picked ? `\n(You recommended ${picked.name}: ${picked.pick.reasons.join(' ')})` : ''),
         });
         // Drawn, and not the end of the turn: the model answers from it, or reads on.
         this.lastRead = { tool, key: callKey(tool.name, values), count: countRecords(res, text) };

@@ -134,6 +134,11 @@ export interface RemotePolicy {
   held?: boolean;
   /** The proxy says it holds another version: fetch it. */
   stale?(version: string): void;
+  /**
+   * The business's opening hours as its owner keeps them, when the proxy's copy carries them (`openingHours`), as
+   * sent: the results card reads them strictly.
+   */
+  openingHours?: unknown;
 }
 
 /** Whether what the guardrails were built from is the element, rather than a configuration. */

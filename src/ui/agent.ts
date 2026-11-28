@@ -26,7 +26,7 @@
  *
  * @module
  */
-import { mountSurface, type MountedSurface } from '../a2ui/host.js';
+import { mountSurface, stepsKit, type MountedSurface } from '../a2ui/host.js';
 import { emitCardsSurface, emitFigureSurface, emitMediaSurface, emitSeriesSurface, pressMessages, showAllMessages, type CanPlay, type ResultCardData } from '../a2ui/cards.js';
 import { actionCta, cardCtas, playButtonFor, playCtas, playLatestCtas, seriesParts, targetUrl, type CardAction, type CardCtas, type PlayAction } from '../harness/cta.js';
 import { mediaRow, seriesCard, type MediaRow, type SeriesCard } from '../harness/media.js';
@@ -43,7 +43,9 @@ import { A2UI_THEME_CSS } from '../a2ui/theme.js';
 // because a published package cannot assume the consumer runs Tailwind.
 import { TAILWIND_CSS } from './tailwind.generated.js';
 import { emitAsk, emitStep, emitConfirm } from '../a2ui/stepper.js';
-import { AgentHarness, isAbort, loadGuard } from '../harness/harness.js';
+import { AgentHarness, isAbort, isTypeListing, loadGuard } from '../harness/harness.js';
+import { isTechnicalRecord, typeTag } from '../harness/type-labels.js';
+import { emergencyFirst, isEmergency } from '../harness/emergency.js';
 import type { Guardrails, GuardrailsConfig } from '../guardrails/index.js';
 import { executeRegistered, WebMcpTools } from '../harness/tools/webmcp.js';
 import {
@@ -67,7 +69,7 @@ import {
   HANDOFF_RESULT,
 } from '../harness/tools/action-tools.js';
 import { resolveSlots, type Slot } from '../harness/slots.js';
-import { isHandoffTool } from '../handoff/tools.js';
+import { isHandoffTool, TALK_TO_A_PERSON_TOOL, TRANSFER_TO_AGENT_TOOL } from '../handoff/tools.js';
 import {
   actionCard,
   fieldLabel,
@@ -78,12 +80,17 @@ import {
   type ActionStep,
 } from './action-card.js';
 import { citeCards, resultsAnswer, RESULTS_ANSWER_CSS, syncPlayButtons, type AnswerCard, type AnswerHandlers } from './result-pick.js';
-import { citeViews, linkNodes, REMOTE_ANSWER_CSS, withoutNote, type LinkPolicy } from './remote-answer.js';
-import type { HandoffAnswer } from '../handoff/envelope.js';
+import { allowedLink, anchor, citeViews, linkNodes, REMOTE_ANSWER_CSS, withoutNote, type LinkPolicy } from './remote-answer.js';
+import type { LocalSource } from './sources.js';
+import { extensionPart, readCard, type HandoffAnswer } from '../handoff/envelope.js';
+import type { SurfaceAction, SurfaceEntry } from '../a2ui/steps.js';
+// Types only: a target's step surfaces are a lazy chunk, loaded with the first reply that has one (see _steps).
+import type { Surfaces } from './surfaces.js';
 // Types only: the player itself is loaded by a dynamic import() on the first Play tap (see _loadMedia), never statically.
 import type { MediaController } from '../media/index.js';
-import { extractRecords, openStatus, recordFacts } from '../harness/records.js';
-import { access, accessAction, archetype, compact, entityLabel, groupOf, mediaKind, nameOf, reviewFacts, reviewStars, subtitle as byline, type Archetype, type MediaKind } from '../harness/entity.js';
+import { extractRecords, hoursText, openStatus, recordFacts } from '../harness/records.js';
+import { hoursStatus, isEmergencyRecord, readOpeningHours, type OpeningHours } from '../harness/opening-hours.js';
+import { access, accessAction, archetype, compact, entityLabel, groupOf, mediaKind, nameOf, onceEach, reviewFacts, reviewStars, subtitle as byline, telHref, type Archetype, type MediaKind } from '../harness/entity.js';
 import type { ResultPick } from '../harness/recommend.js';
 import { resumePendingAction } from '../harness/tools/resume.js';
 import { findHandoffForm, handoffUrl, startFormMessage, startMessage, takeInboundHandoff, type InboundHandoff } from '../harness/tools/inbound.js';
@@ -105,6 +112,7 @@ import {
 } from '../handoff/controller.js';
 import { registerHandoffTools, HANDOFF_SESSION_RESULT } from '../handoff/tools.js';
 import { formTakenBy } from '../handoff/takes.js';
+import { CLEAR_DETAILS_EVENT, contactFromProfile, detailOf, detailsFromContact, detailsFromFields, mergeDetails } from './details.js';
 import type { RouteRule } from '../harness/router/rules.js';
 import type { AskRequest, ConfirmRequest, HarnessRenderer, StreamingBubble as HStreamingBubble } from '../harness/renderer.js';
 import {
@@ -145,6 +153,24 @@ import type { JsonSchema, ModelContextToolInfo, ModelContextToolResponse } from 
 // Prefixed keys so state never collides with other Nxis examples on the same origin.
 const PROFILE_KEY = 'nxis-listings-agent-profile';
 const CONV_KEY = 'nxis-listings-agent-conversations';
+
+/** The panel's open state, kept for this tab so a reload opens it again. */
+const OPEN_KEY = 'nxis-agent-open';
+const keepOpen = (open: boolean): void => {
+  try {
+    if (open) sessionStorage.setItem(OPEN_KEY, '1');
+    else sessionStorage.removeItem(OPEN_KEY);
+  } catch {
+    /* storage off: it opens closed */
+  }
+};
+const wasOpen = (): boolean => {
+  try {
+    return sessionStorage.getItem(OPEN_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
 /** The viewer's last choice of window or full screen, used when the host sets no `mode`. */
 const MODE_KEY = 'nxis-agent:mode';
 
@@ -217,6 +243,9 @@ function formatBytes(n: number): string {
   return `${Math.round(mb)} MB`;
 }
 
+/** A type listing as an older version kept it ("8 kinds"): never drawn. */
+const isListingItem = (it: { note?: string }): boolean => /^\d+ kinds?$/.test(it.note ?? '');
+
 const uid = () => 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
 /**
@@ -242,6 +271,10 @@ const ICON_SEARCH = svg('<circle cx="9" cy="9" r="4.8"/><path d="m13 13 3.5 3.5"
 /** Expand to full screen, and shrink back to a window: the header's mode toggle. */
 const ICON_EXPAND = svg('<path d="M12 4h4v4M8 16H4v-4M16 4l-5 5M4 16l5-5"/>');
 const ICON_SHRINK = svg('<path d="M15 9h-4V5M5 11h4v4M11 9l5-5M9 11l-5 5"/>');
+// Heroicons v2.2.0, MIT, © Tailwind Labs (https://heroicons.com). See THIRD_PARTY_NOTICES.
+/** document-text, 24/outline: a handoff bar's mark. */
+const ICON_HANDED =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>';
 const ICON_GLOBE = svg('<circle cx="10" cy="10" r="6.5"/><path d="M3.5 10h13M10 3.5c2 2 2 11 0 13M10 3.5c-2 2-2 11 0 13"/>');
 
 /**
@@ -285,6 +318,9 @@ function looksMachine(text: string): boolean {
   }
 }
 
+/** Anything markdown would draw differently: emphasis, code, a link, a heading, a list, a line break. */
+const MD_HINT = /[*_`[#\n]|https?:/;
+
 /** Longer than this, a block is folded away rather than filling the thread. */
 const FOLD_LINES = 10;
 
@@ -296,7 +332,7 @@ const FOLD_LINES = 10;
  * markup — a message may carry a tool's output, which is not ours to trust
  * as HTML.
  */
-function fillMessage(el: HTMLElement, text: string, link?: (text: string) => Node[]): void {
+function fillMessage(el: HTMLElement, text: string, link?: (text: string) => Node[], md?: (el: HTMLElement, text: string) => void): void {
   for (const part of splitCode(text)) {
     if (part.code) {
       const pre = document.createElement('pre');
@@ -317,7 +353,8 @@ function fillMessage(el: HTMLElement, text: string, link?: (text: string) => Nod
         el.appendChild(pre);
       }
     } else if (part.text) {
-      if (link) el.append(...link(part.text));
+      if (md) md(el, part.text);
+      else if (link) el.append(...link(part.text));
       else el.appendChild(document.createTextNode(part.text));
     }
   }
@@ -407,7 +444,8 @@ interface ResultCard {
 }
 
 type ThreadItem =
-  | { kind: 'msg'; role: string; text: string }
+  /** `sources`: the records read in the turn an assistant's reply answered from, for its markers and Sources list. */
+  | { kind: 'msg'; role: string; text: string; sources?: LocalSource[] }
   | { kind: 'tool'; name: string; text: string; isError: boolean }
   | { kind: 'trace'; name: string; args: Record<string, unknown>; text: string; isError: boolean; count?: number }
   | { kind: 'route'; agent: string; via: string }
@@ -434,6 +472,10 @@ type ThreadItem =
       task?: string;
       /** The visitor's 👍 or 👎 on the answer, once given. */
       feedback?: 'up' | 'down';
+      /** The target's step surfaces drawn under it, each as last updated. See ./surfaces.ts. */
+      surface?: SurfaceEntry[];
+      /** Its surfaces end in a receipt: the bar no longer says the target waits on the visitor. */
+      receipt?: boolean;
     }
   /** Where a handoff stands, as a quiet line in the thread. */
   | { kind: 'handoff'; text: string; tone: 'info' | 'done' | 'error' }
@@ -495,6 +537,11 @@ interface Conversation {
   items: ThreadItem[];
   /** Real Gemma tokenizer counts per generation round (drives the metrics panel). */
   metrics?: MetricsRound[];
+  /**
+   * The visitor's details for this conversation, by profile key (./details.ts): what they typed or confirmed here,
+   * over the host's preferences. Kept with the conversation and gone with it.
+   */
+  details?: Record<string, string>;
 }
 
 interface AgentEls {
@@ -680,7 +727,19 @@ export class NxisAgent extends HTMLElement {
 
   constructor() {
     super();
-    this.attachShadow({ mode: 'open' });
+    const root = this.attachShadow({ mode: 'open' });
+    // A2UI Text asks its Lit context for a markdown renderer: this element is its provider. (The context is the
+    // symbol the renderer made, matched by its description so a second copy of the harness answers its own.)
+    root.addEventListener('context-request', (e: any) => {
+      if (typeof e.context !== 'symbol' || e.context.description !== 'A2UIMarkdown') return;
+      e.stopPropagation();
+      e.callback((text: string) => this._mdHtml(text), () => {});
+    });
+    // A link drawn in A2UI Text opens only past the guardrails' navigation check.
+    root.addEventListener('click', (e) => {
+      const a = e.composedPath().find((n) => (n as HTMLElement).dataset?.md !== undefined) as HTMLAnchorElement | undefined;
+      if (a && !e.defaultPrevented && !this._g?.nav(a.href)) e.preventDefault();
+    });
     this._turnActive = false;
     this._tool = null; // tool of the live inline form (if any)
     this._formEl = null; // the live inline form element (transient, not persisted)
@@ -860,6 +919,8 @@ export class NxisAgent extends HTMLElement {
     // Contained, opening on connect doesn't take focus: the preview sits in
     // someone else's page, which shouldn't scroll to it or lose its place.
     if (this.hasAttribute('auto-open')) this._open(!this.contained);
+    // Open when the page reloaded (or the visitor went to another page of the site) with it open: in this tab only.
+    else if (!this.contained && wasOpen()) this._open(false);
   }
 
   private _navOpen(): boolean {
@@ -935,9 +996,18 @@ export class NxisAgent extends HTMLElement {
    * Show or hide the window, and say so with `nxis-agent-toggle` (`detail.open`)
    * when that changes, whatever changed it.
    */
+  /** The thread's scroll offset when the panel closed; -1 for its end. */
+  private _at = -1;
+
   private _setOpen(open: boolean): void {
     if (this.isOpen === open) return;
+    const t = this._els.thread;
+    // Where the visitor was in the thread, kept while it's closed: at the end, unless they had scrolled up.
+    if (!open) this._at = t.scrollHeight - t.scrollTop - t.clientHeight > 40 ? t.scrollTop : -1;
     this._els.overlay.classList.toggle('show', open);
+    if (!this.contained) keepOpen(open);
+    if (open && this._at < 0) this._scroll();
+    else if (open) t.scrollTop = this._at;
     this.dispatchEvent(new CustomEvent('nxis-agent-toggle', { detail: { open }, bubbles: true, composed: true }));
   }
 
@@ -991,6 +1061,7 @@ export class NxisAgent extends HTMLElement {
         title: c.title,
         messages: c.messages,
         items: c.items.filter((it) => it.kind !== 'form'),
+        ...(c.details && Object.keys(c.details).length ? { details: c.details } : {}),
       }));
       localStorage.setItem(CONV_KEY, JSON.stringify(slim));
     } catch {
@@ -1124,7 +1195,7 @@ export class NxisAgent extends HTMLElement {
     }
     for (let i = 0; i < conv.items.length; i++) {
       const it = conv.items[i];
-      if (it.kind === 'msg') this._paintMsg(it.role, it.text, i);
+      if (it.kind === 'msg') this._paintMsg(it.role, it.text, i, it.sources);
       else if (it.kind === 'tool') this._paintToolResult(it.name, it.text, it.isError);
       else if (it.kind === 'trace') {
         if (this.debug) this._els.thread.appendChild(this._traceEl(it));
@@ -1134,8 +1205,10 @@ export class NxisAgent extends HTMLElement {
         if (this.debug) this._els.thread.appendChild(this._routeEl(it));
       }
       else if (it.kind === 'detail') this._els.thread.appendChild(this._detailEl(it));
-      else if (it.kind === 'results') this._els.thread.appendChild(this._resultsEl(it));
-      else if (it.kind === 'metrics') this._els.thread.appendChild(this._metricsEl(it));
+      else if (it.kind === 'results') {
+        // A type listing kept by an older version is not drawn: visitors never read one.
+        if (!isListingItem(it)) this._els.thread.appendChild(this._resultsEl(it));
+      } else if (it.kind === 'metrics') this._els.thread.appendChild(this._metricsEl(it));
       else if (it.kind === 'journey') {
         // A request drawn as an action card shows its own steps.
         if (!conv.items.some((a) => a.kind === 'action' && a.id === it.id)) this._els.thread.appendChild(this._journeyEl(it));
@@ -1163,7 +1236,7 @@ export class NxisAgent extends HTMLElement {
    * The squared corner nearest the sender is the one carrying information: it
    * is how a glance tells user from assistant before any colour is read.
    */
-  private _msgEl(role: string, text: string, link?: (text: string) => Node[]): HTMLElement {
+  private _msgEl(role: string, text: string): HTMLElement {
     const el = document.createElement('div');
     const base =
       'max-w-[76%] whitespace-pre-wrap break-words px-3.5 py-2.5 text-sm leading-relaxed';
@@ -1172,8 +1245,74 @@ export class NxisAgent extends HTMLElement {
         ? 'self-end bg-blue text-white rounded-2xl rounded-br-md'
         : 'self-start bg-surface text-ink border border-border-hair rounded-2xl rounded-bl-md shadow-resting';
     el.className = `msg ${role} ${base} ${byRole}`;
-    fillMessage(el, text, link);
+    if (role === 'assistant') void this._fillReply(el, text);
+    else fillMessage(el, text);
     return el;
+  }
+
+  /** The markdown chunk, once here. See ./markdown.ts. */
+  private _mdMod?: typeof import('./markdown.js');
+  private _mdLoad?: Promise<unknown>;
+  /** What each reply's bubble last had written into it, and when it is drawn as it will stay. */
+  private _replyText = new WeakMap<HTMLElement, string>();
+  private _replyDrawn = new WeakMap<HTMLElement, Promise<void>>();
+
+  /**
+   * Write a reply (the assistant's, or a remote agent's) into its bubble: as markdown once that chunk is here,
+   * loading it the first time a reply has anything markdown would change, and as text with its links till then.
+   * Links open only where the page allows ({@link _linkPolicy}). Resolves once the bubble is drawn as it will stay.
+   */
+  private _fillReply(el: HTMLElement, text: string): Promise<void> {
+    this._replyText.set(el, text);
+    const policy = this._linkPolicy();
+    const visit = (url: string, label: string) => savePendingVisit({ pageUrl: url, label, conversationId: this._activeId ?? undefined });
+    const draw = () => {
+      el.textContent = '';
+      const m = this._mdMod;
+      const link = (label: string, href: string) => {
+        const url = allowedLink(href, policy);
+        return url ? anchor(url, label, policy, visit) : null;
+      };
+      fillMessage(el, this._replyText.get(el) ?? '', (t) => linkNodes(t, policy, visit), m && ((into, t) => m.mdFill(into, t, { link })));
+    };
+    draw();
+    const done =
+      this._mdMod || !MD_HINT.test(text)
+        ? Promise.resolve()
+        : (this._mdLoad ??= import('./markdown.js').then(
+            (m) => void (this._mdMod = m),
+            () => void (this._mdLoad = undefined),
+          )).then(() => void (this._mdMod && draw()));
+    this._replyDrawn.set(el, done);
+    return done;
+  }
+
+  /** A2UI Text's markdown, as HTML built from our own elements; plain text is escaped without loading anything. */
+  private _mdHtml(text: string): Promise<string> {
+    if (!MD_HINT.test(text)) return Promise.resolve(escapeHtml(text));
+    const policy = this._linkPolicy();
+    return (this._mdLoad ??= import('./markdown.js').then((m) => void (this._mdMod = m)))
+      .then(() =>
+        this._mdMod!.mdHtml(text, {
+          link: (label, href) => {
+            const url = allowedLink(href, policy);
+            if (!url) return null;
+            const a = document.createElement('a');
+            a.href = url;
+            a.dataset.md = '';
+            a.textContent = label;
+            if (openWay(url) === 'new-tab') {
+              a.target = '_blank';
+              a.rel = 'noopener noreferrer';
+            }
+            return a;
+          },
+        }),
+      )
+      .catch(() => {
+        this._mdLoad = undefined;
+        return escapeHtml(text);
+      });
   }
 
   /**
@@ -1245,9 +1384,10 @@ export class NxisAgent extends HTMLElement {
    * action bar; omit it for messages that should not carry one.
    * @returns The bubble element.
    */
-  private _paintMsg(role: string, text: string, index?: number): HTMLElement {
+  private _paintMsg(role: string, text: string, index?: number, sources?: LocalSource[]): HTMLElement {
     this._clearEmpty();
     const el = this._msgEl(role, text);
+    if (sources?.length) this._paintLocalSources(el, sources, index);
     if (role !== 'user' || index === undefined) {
       this._els.thread.appendChild(el);
       return el;
@@ -1740,7 +1880,7 @@ export class NxisAgent extends HTMLElement {
           el.innerHTML = '';
           if (this._liveBubble === bubble) this._liveBubble = null;
         }
-        el.textContent = t;
+        void this._fillReply(el, t);
         this._scroll();
       },
       // Empty text means the phase had nothing to leave behind (a finished
@@ -1754,8 +1894,14 @@ export class NxisAgent extends HTMLElement {
           el.remove();
           return;
         }
-        el.textContent = t;
-        this._active()!.items.push({ kind: 'msg', role: 'assistant', text: t });
+        void this._fillReply(el, t);
+        // An answer from records read in this turn (else read earlier in this conversation, as the model answers from
+        // them too): their markers and Sources list, as a remote answer has. Only a record the reply names is cited.
+        const read = this._citable();
+        const sources = read.length ? [...read] : undefined;
+        const items = this._active()!.items;
+        items.push({ kind: 'msg', role: 'assistant', text: t, ...(sources ? { sources } : {}) });
+        if (sources) this._paintLocalSources(el, sources, items.length - 1);
         this._saveConversations();
         this._scroll();
       },
@@ -1807,7 +1953,33 @@ export class NxisAgent extends HTMLElement {
       return;
     }
 
+    // A card still waiting for its button (a Hand over or Send offer) is stale once the visitor moves on: it goes
+    // inert, and the model reads that nothing was sent, so a typed "yes" is never taken as the press.
+    const live = this._live;
+    if (live && !live.sent && live.item.stage === 'review' && conv) {
+      live.item.stage = 'declined';
+      this._live = null;
+      this._paintAction(live.item);
+      conv.messages.push({
+        role: 'user',
+        content: `[${live.tool.name} was not sent]`,
+        data: `The visitor wrote a new message instead of pressing the card's ${live.item.sendLabel ?? 'Send'} button, so nothing was sent or handed over, and that card no longer works. If they still want it, call the tool again: the page shows a new card for them to press.`,
+      });
+      this._saveConversations();
+    }
+
+    await this._runTurn(goal, conv!, call);
+  }
+
+  /**
+   * One turn of the page's assistant: `call` made without asking the model when given, else the model's turn.
+   *
+   * @param only - Only `call`: when no agent here holds its tool, nothing happens (no model call).
+   */
+  private async _runTurn(goal: string, conv: Conversation, call?: { name: string; args: Record<string, unknown> }, only = false): Promise<void> {
     this._turnActive = true;
+    this._turnSources = [];
+    this._turnGoal = goal;
     this._setStoppable(true);
     let settle!: () => void;
     this._turnDone = new Promise<void>((r) => (settle = r));
@@ -1821,8 +1993,8 @@ export class NxisAgent extends HTMLElement {
       this._syncProfileContext();
       // One agent, or several with a router in front: the signatures match.
       const engine = this._coordinator ?? this._harness;
-      const begun = call ? await engine.begin(goal, call.name, call.args, conv!.messages) : null;
-      if (!begun || begun.decision === 'unavailable') await engine.turn(goal, conv!.messages);
+      const begun = call ? await engine.begin(goal, call.name, call.args, conv.messages) : null;
+      if (!only && (!begun || begun.decision === 'unavailable')) await engine.turn(goal, conv.messages);
       // A remote endpoint reports which model answered; the name beside the
       // input follows it rather than keeping whatever was configured.
       this._paintProvenance();
@@ -1856,6 +2028,9 @@ export class NxisAgent extends HTMLElement {
       left: (tool, destination) => this._cardLeft(tool, destination),
       results: (tool, res, extra) => {
         const conv = this._active();
+        // A type listing is a step for the model (which kinds of records to search next), never something a visitor
+        // reads: nothing is drawn or kept. The tool trace (behind `debug`) still shows the call.
+        if (isTypeListing(tool.name)) return;
         const item = this._buildResultsItem(tool, res, extra?.pick);
         // A dated search that found nothing then says so, before the next ones or in their place.
         let lead = '';
@@ -1877,6 +2052,7 @@ export class NxisAgent extends HTMLElement {
         }
         conv?.items.push(item);
         this._els.thread.appendChild(this._resultsEl(item));
+        this._noteSources(res);
         this._upsertMetrics();
         this._saveConversations();
         this._scroll();
@@ -2063,6 +2239,7 @@ export class NxisAgent extends HTMLElement {
     wrap.querySelector('[data-act="submit"]')!.addEventListener('click', () => {
       const btn = wrap.querySelector('[data-act="submit"]') as HTMLButtonElement;
       btn.disabled = true;
+      this._rememberDetails(this._active(), detailsFromFields(req.values));
       req.onSubmit(req.values);
     });
 
@@ -2310,6 +2487,8 @@ export class NxisAgent extends HTMLElement {
         const live = this._live;
         if (!live) return;
         live.sent = true;
+        // What the visitor sends on a page's form is theirs: kept for this conversation's next form and agent.
+        this._rememberDetails(this._active(), detailsFromFields(values));
         if (live.confirm) live.confirm.onSubmit(values);
         else if (live.run) void live.run(values);
       },
@@ -2820,16 +2999,25 @@ export class NxisAgent extends HTMLElement {
     return items;
   }
 
+  /** The proxy copy's opening hours, read strictly once per copy; null without them. */
+  private _ownerHours(): OpeningHours | null {
+    const raw = this._g?.remote?.openingHours;
+    if (raw !== this._ohRaw) this._oh = readOpeningHours((this._ohRaw = raw));
+    return this._oh;
+  }
+  private _ohRaw?: unknown;
+  private _oh: OpeningHours | null = null;
+
   /** Build a display card from a single record (a JSON-LD entity or a type row). */
   private _entityCard(record: Record<string, unknown>): ResultCard {
     // One shape whatever the server sent: expanded JSON-LD (`http://schema.org/name: [{"@value": …}]`) reads as
     // compact.
     const entity = compact(record);
     const str = (v: unknown) => (v == null ? '' : String(Array.isArray(v) ? v[0] : v));
-    const rawType = entity['@type'];
     const title = entityLabel(entity);
     const arch = archetype(entity);
-    const type = rawType ? humanize(str(rawType)) : '';
+    // In words, never a schema.org name; none for site plumbing.
+    const type = typeTag(entity) ?? '';
 
     // Positive outcome (rating) → green tag, per the color rules.
     let rating: string | undefined;
@@ -2839,9 +3027,13 @@ export class NxisAgent extends HTMLElement {
       rating = ar.reviewCount != null ? `${stars} ${str(ar.ratingValue)} · ${str(ar.reviewCount)}` : `${stars} ${str(ar.ratingValue)}`;
     }
 
+    // The owner's opening hours, when the site's proxy sends them, for the business's own records (a place, not its
+    // emergency service): its status reads them, in its zone, and its own round-the-clock hours aren't its hours.
+    const owner = archetype(entity) === 'place' && !isEmergencyRecord(entity) ? this._ownerHours() : null;
     // 24/7 emergency service is only implied by round-the-clock opening hours.
     const hours = entity.openingHoursSpecification;
     const emergency =
+      !owner &&
       Array.isArray(hours) &&
       hours.some(
         (h) =>
@@ -2875,7 +3067,7 @@ export class NxisAgent extends HTMLElement {
     for (const key of preferred) {
       const v = entity[key];
       if (typeof v === 'string' || typeof v === 'number') {
-        const href = key === 'telephone' ? `tel:${String(v).replace(/[^\d+]/g, '')}` : undefined;
+        const href = key === 'telephone' ? telHref(v) : undefined;
         push(humanize(key === 'url' ? 'website' : key), v, href);
       }
     }
@@ -2892,7 +3084,7 @@ export class NxisAgent extends HTMLElement {
 
     // What the answer view compares by, beyond the rating and hours its heading already shows.
     const facts = recordFacts(entity);
-    const status = openStatus(entity) ?? undefined;
+    const status = (owner ? hoursStatus(owner) : openStatus(entity)) ?? undefined;
     // A review's facts are its own: who wrote it and what they said, not the business's.
     const lines =
       arch === 'opinion'
@@ -2969,7 +3161,17 @@ export class NxisAgent extends HTMLElement {
     pick?: ResultPick,
   ): Extract<ThreadItem, { kind: 'results' }> {
     const items = this._extractItems(res);
-    const cards = items.slice(0, 12).map((e) => this._entityCard(e));
+    const title = humanize(withoutSiteSuffix(tool.name));
+    // Site plumbing (breadcrumbs, the website, a picture) isn't drawn beside the things it came with.
+    const things = pick ? items : items.filter((e) => !isTechnicalRecord(compact(e)));
+    // One business once: records of one name, type and address are one row (a pick moves to the row it is in).
+    const all = things.length ? things : items;
+    const once = onceEach(all.map((e) => compact(e)));
+    const shown = once.keep.map((i) => all[i]).slice(0, 12);
+    if (pick) pick = { ...pick, index: once.at[pick.index] ?? pick.index };
+    let cards = shown.map((e) => this._entityCard(e));
+    // An emergency: the first call a card offers is the emergency line, never the main one.
+    if (!pick && isEmergency(this._turnGoal)) cards = emergencyFirst(cards, shown.map((e) => compact(e)));
     for (const c of cards) {
       const lead = c.series?.ctas?.lead;
       if (lead?.kind === 'play' && !lead.media) void this._prefetchLatest(lead);
@@ -2979,7 +3181,7 @@ export class NxisAgent extends HTMLElement {
       : `${cards.length} result${cards.length === 1 ? '' : 's'}`;
     // An event's Add to calendar opens the file the server its records came from builds.
     const calendar = this._calendar && this._remoteTools.has(tool.name) && cards.some((c) => c.event) ? this._calendar : undefined;
-    return { kind: 'results', title: humanize(withoutSiteSuffix(tool.name)), note, cards, ...(pick && pick.index < cards.length ? { pick } : {}), ...(calendar ? { calendar } : {}) };
+    return { kind: 'results', title, note, cards, ...(pick && pick.index < cards.length ? { pick } : {}), ...(calendar ? { calendar } : {}) };
   }
 
   /**
@@ -3649,18 +3851,48 @@ export class NxisAgent extends HTMLElement {
     };
   }
 
+  /**
+   * The profile the agent reads: the host's preferences, with the active conversation's details (what the visitor
+   * typed or confirmed in it) over them.
+   */
+  private _profileNow(conv: Conversation | null = this._active()): Record<string, string> {
+    return { ...this._profile, ...(conv?.details ?? {}) };
+  }
+
+  /**
+   * Keep details the visitor typed or confirmed, with the conversation they belong to: the next form, and the next
+   * agent handed the conversation, start with them. Nothing changes for a blank value.
+   */
+  private _rememberDetails(conv: Conversation | null | undefined, patch: Record<string, string>): void {
+    if (!conv) return;
+    const next = mergeDetails(conv.details, patch);
+    if (!next) return;
+    conv.details = next;
+    if (conv.id === this._activeId) this._syncProfileContext();
+    this._saveConversations();
+  }
+
+  /** "Not you? Clear details": the conversation's details are gone; the host's preferences stay the host's. */
+  private _forgetDetails(conv: Conversation | null | undefined): void {
+    if (!conv?.details) return;
+    delete conv.details;
+    if (conv.id === this._activeId) this._syncProfileContext();
+    this._saveConversations();
+  }
+
   /** Map the saved profile onto a tool's schema property names. */
   private _profileForSchema(schema: JsonSchema): Record<string, string> {
     const props = schema && schema.properties ? Object.keys(schema.properties) : [];
     if (!props.length) return {};
     const norm = (s: string) => String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
     const out: Record<string, string> = {};
-    for (const [pf, val] of Object.entries(this._profile)) {
+    for (const [pf, val] of Object.entries(this._profileNow())) {
       if (!val || !String(val).trim()) continue;
       const cands = (PROFILE_ALIASES[pf] || [pf]).map(norm);
+      // A near match never takes a field that is exactly another detail's (`email_address` is the email's).
       const match =
         props.find((p) => cands.includes(norm(p))) ||
-        props.find((p) => cands.some((c) => norm(p).includes(c) || c.includes(norm(p))));
+        props.find((p) => { const d = detailOf(p); return (!d || d === pf) && cands.some((c) => norm(p).includes(c) || c.includes(norm(p))); });
       if (match && out[match] === undefined) out[match] = val;
     }
     return out;
@@ -3673,7 +3905,7 @@ export class NxisAgent extends HTMLElement {
   private _syncProfileContext(): void {
     const conv = this._active();
     if (!conv || !conv.messages[0]) return;
-    const data = Object.entries(this._profile)
+    const data = Object.entries(this._profileNow(conv))
       .filter(([, v]) => v && String(v).trim())
       .map(([k, v]) => `${humanize(k)}: ${v}`)
       .join('\n');
@@ -3726,7 +3958,26 @@ export class NxisAgent extends HTMLElement {
     this._els.bar.style.width = `${Math.max(0, Math.min(100, pct))}%`;
   }
   private _scroll(): void {
-    this._els.thread.scrollTop = this._els.thread.scrollHeight;
+    const t = this._els.thread;
+    t.scrollTop = t.scrollHeight;
+    this._endAt = t.scrollTop;
+  }
+
+  /** Where the thread was last put at its end: a visitor still there hasn't scrolled away since. */
+  private _endAt = 0;
+
+  /**
+   * Cards drawn a moment after their reply (their chunk loads, then they render) keep a thread that was at its end
+   * there, as after a reload: it opens at the bottom, not above the card.
+   */
+  private _keepEnd(drawn: Promise<unknown>): void {
+    const again = () => {
+      if (this._els.thread.scrollTop >= this._endAt - 4) this._scroll();
+    };
+    void drawn.then(() => {
+      again();
+      setTimeout(again, 120);
+    });
   }
 
   private _autosize(): void {
@@ -3850,6 +4101,7 @@ export class NxisAgent extends HTMLElement {
     const added = await registerHandoffTools(mc, controller, {
       conversationId: () => this._activeId ?? undefined,
       transcript: () => this._transcript(),
+      contact: () => contactFromProfile(this._profileNow()),
     });
     if (added.length) void this._refreshToolCount();
   }
@@ -3872,7 +4124,19 @@ export class NxisAgent extends HTMLElement {
     if (!conv) return;
     if (e.type === 'message') {
       // The task it came on: feedback on its answer goes there, and only while it's open.
-      this._appendHandoffItem(conv.id, { kind: 'remote', from: e.from, fromKind: e.fromKind, text: e.text, answer: e.answer, task: e.session.taskId ?? e.session.contextId });
+      const item: Extract<ThreadItem, { kind: 'remote' }> = { kind: 'remote', from: e.from, fromKind: e.fromKind, text: e.text, answer: e.answer, task: e.session.taskId ?? e.session.contextId };
+      // Words are drawn at once; a reply that only updates a surface draws nothing of its own.
+      const shown = !!(e.text || e.answer);
+      // Its step cards come once their chunk is here: its Sources wait for them, to go under the card.
+      let painted = () => {};
+      if (e.surface && shown) this._stepsPending.set(item, new Promise<void>((r) => (painted = r)));
+      const el = shown ? this._appendHandoffItem(conv.id, item) : null;
+      // Kept and drawn under the reply, or, for a reply with no words, under one of its own when it draws a new one.
+      if (e.surface)
+        void this._steps()
+          .then((st) => st.receive(conv.items, item, e.surface) && (shown ? el && st.paint(el, item) : this._appendHandoffItem(conv.id, item)))
+          .finally(() => (painted(), conv.id === this._activeId && this._paintHandoffBar()));
+      else void this._surfacesLoad?.then((s) => s.sync(true), () => {});
     } else if (e.type === 'handback') {
       const { outcome, note, references } = e.handBack;
       const refs = references.map((r) => `${r.label}: ${r.value}`).join(' · ');
@@ -3884,7 +4148,15 @@ export class NxisAgent extends HTMLElement {
         content: `[${e.session.label} handed the conversation back]`,
         data: `${outcome}\n${note ?? ''}\n${refs}`,
       });
+      // A person's own words for the visitor (the team's close note), drawn as text: then the references.
+      if (note && e.session.kind === 'person')
+        this._appendHandoffItem(conv.id, { kind: 'handoff', text: `${e.session.label} ${outcome === 'transferred' ? 'passed you back' : 'closed this conversation'}: ${note}`, tone: 'done' });
       if (refs) this._appendHandoffItem(conv.id, { kind: 'handoff', text: refs, tone: 'done' });
+      // The details the visitor confirmed with the target, for the next agent: kept with the conversation, and read
+      // by the model only as the profile's data.
+      if (e.handBack.contact) this._rememberDetails(conv, detailsFromContact(e.handBack.contact));
+      // The visitor asked the target for another agent: offered once the hand-back has settled.
+      if (e.handBack.next) this._next = { id: conv.id, from: e.session.target, ...e.handBack.next };
     } else {
       const text = handoffLine(e.session);
       const last = [...conv.items].reverse().find((it) => it.kind === 'handoff') as
@@ -3905,18 +4177,94 @@ export class NxisAgent extends HTMLElement {
     }
     this._saveConversations();
     if (conv.id === this._activeId) this._paintHandoffBar();
+    if (e.type === 'state') void this._surfacesLoad?.then((s) => s.sync(), () => {});
+    const next = this._next;
+    if (next?.id === conv.id && !this._handoff?.active(conv.id)) {
+      this._next = null;
+      setTimeout(() => void this._offerNext(next));
+    }
+  }
+
+  /** A hand-back's `next`, waiting for the hand-back to settle. Never kept: a reload offers nothing again. */
+  private _next: { id: string; from: string; target: string; reason: string; summary: string } | null = null;
+
+  /**
+   * Offer the agent a target's hand-back asked for: the Hand over card the model's own `transfer_to_agent` call
+   * draws (or, for a person target, `talk_to_a_person`'s), without asking the model. Only in the conversation on screen,
+   * after any turn running ends, and for a listed target that is available and isn't the one that handed back;
+   * otherwise the model reads the note as before.
+   */
+  private async _offerNext({ id, from, target, reason, summary }: NonNullable<typeof this._next>): Promise<void> {
+    await this._turnDone;
+    const h = this._handoff;
+    const t = h && (await h.targets()).find((x) => x.name === target);
+    if (!t || (await this._guard())) return;
+    const conv = this._active();
+    if (!t.available || target === from || id !== conv?.id || this._turnActive) return;
+    // A person target (the team, which an agent hands back for) gets the person tool's card.
+    await this._runTurn(reason, conv, { name: t.kind === 'person' ? TALK_TO_A_PERSON_TOOL : TRANSFER_TO_AGENT_TOOL, args: { target, reason, summary } }, true);
   }
 
   /** Add a handoff item to a conversation, and draw it when that conversation is on screen. */
-  private _appendHandoffItem(conversationId: string, item: Extract<ThreadItem, { kind: 'remote' | 'handoff' }>): void {
+  private _appendHandoffItem(conversationId: string, item: Extract<ThreadItem, { kind: 'remote' | 'handoff' }>): HTMLElement | null {
     const conv = this._conversations.find((c) => c.id === conversationId);
-    if (!conv) return;
+    if (!conv) return null;
     conv.items.push(item);
     this._saveConversations();
     if (conversationId === this._activeId && this._els?.thread) {
-      this._paintHandoffItem(item, conv.items.length - 1);
+      const el = this._paintHandoffItem(item, conv.items.length - 1);
       this._scroll();
       this._noteThreadGrew();
+      return el;
+    }
+    return null;
+  }
+
+  // ── A target's step surfaces (./surfaces.ts) ─────────────────────────
+
+  /** The surfaces' module, loaded with the first reply that has one. */
+  private _surfacesLoad?: Promise<Surfaces>;
+
+  /** A live reply's step cards, drawn once their chunk is here: what its Sources wait for. */
+  private _stepsPending = new WeakMap<object, Promise<void>>();
+
+  private _steps(): Promise<Surfaces> {
+    return (this._surfacesLoad ??= import('./surfaces.js').then(
+      (m) =>
+        new m.Surfaces({
+          kit: stepsKit,
+          mount: mountSurface,
+          act: (text, action) => this._surfaceAct(text, action),
+          go: (url, name) => this._go(url, name),
+          // Where a surface's links may go besides this page: `link-origins`, and the relay's (a calendar file).
+          origins: () => [...(this._linkPolicy().origins ?? []), ...(this._handoff ? [new URL(this._handoff.config.relay, location.href).origin] : [])],
+          back: () => void this._endHandoff(),
+          live: () => !!this._handoff?.active(this._activeId ?? undefined),
+          save: () => this._saveConversations(),
+        }),
+      (err) => {
+        this._surfacesLoad = undefined;
+        throw err;
+      },
+    ));
+  }
+
+  /** A choice made on a surface, to the target: through the same input checks as words typed to it. */
+  private async _surfaceAct(text: string, action: SurfaceAction): Promise<boolean> {
+    const id = this._activeId;
+    const conv = this._active();
+    const down = await this._guard();
+    if (down) this._reportEngineError(down);
+    if (down || !id || !conv || !this._handoff || (await this._g!.input(text, conv.messages, this._renderer()))) return false;
+    // A form the visitor sent: its details are theirs, for the next agent. "Not you?": they go first.
+    if (action.name === CLEAR_DETAILS_EVENT) this._forgetDetails(conv);
+    else this._rememberDetails(conv, detailsFromFields(action.context?.form));
+    try {
+      await this._handoff.send(id, text, [extensionPart(action as unknown as Record<string, unknown>)]);
+      return true;
+    } catch (err) {
+      this._appendHandoffItem(id, { kind: 'handoff', text: this._handoff.session(id)?.error ?? String((err as Error)?.message || err), tone: 'error' });
+      return false;
     }
   }
 
@@ -3937,7 +4285,6 @@ export class NxisAgent extends HTMLElement {
       who.textContent = item.fromKind === 'agent' ? `${item.from} · agent` : item.from;
       el.append(who);
       const answer = item.answer;
-      const policy = this._linkPolicy();
       if (answer?.note) {
         const note = document.createElement('div');
         note.className = 'remote-note';
@@ -3945,12 +4292,15 @@ export class NxisAgent extends HTMLElement {
         el.append(note);
       }
       const text = withoutNote(item.text, answer?.note);
-      const visit = (url: string, label: string) => savePendingVisit({ pageUrl: url, label, conversationId: this._activeId ?? undefined });
-      const bubble = text.trim() || answer?.cards.length ? this._msgEl('assistant', text, (t) => linkNodes(t, policy, visit)) : null;
+      const bubble = text.trim() || answer?.cards.length ? this._msgEl('assistant', text) : null;
       if (bubble) el.append(bubble);
+      const steps = item.surface?.length ? this._steps().then((st) => st.paint(el, item), () => {}) : (this._stepsPending.get(item) ?? null);
+      if (steps) this._keepEnd(steps);
       if (bubble && answer?.cards.length) {
         el.classList.add('has-cards');
-        this._paintSources(el, bubble, answer, index);
+        // The markers go in the text as drawn: after the markdown, when it has any. With a step card (an estimate),
+        // the Sources list goes under the card, as its markers point there too.
+        void Promise.all([this._replyDrawn.get(bubble), steps]).then(() => this._paintSources(el, bubble, answer, index, !!steps));
       }
       // An answer with an id gets 👍 and 👎, cards or not.
       if (answer?.answerId) {
@@ -3970,13 +4320,84 @@ export class NxisAgent extends HTMLElement {
   private _sourcesLoad?: Promise<typeof import('./sources.js')>;
 
   /** An answer's markers, its Sources list and its content cards, drawn once their module arrives. See ./sources.ts. */
-  private _paintSources(el: HTMLElement, bubble: HTMLElement, answer: HandoffAnswer, index: number | undefined): void {
+  private _paintSources(el: HTMLElement, bubble: HTMLElement, answer: HandoffAnswer, index: number | undefined, under = false): void {
     (this._sourcesLoad ??= import('./sources.js')).then(
       (m) => {
-        m.paintSources(bubble, answer, { views: this._citeViews(answer, index), handlers: this._citeHandlers(), allow: (url) => !!this._g?.nav(url), openWay, citeCards });
+        const below = under ? ([...el.children].filter((c) => c.classList.contains('surface')).slice(-1)[0] as HTMLElement | undefined) : undefined;
+        m.paintSources(bubble, answer, { views: this._citeViews(answer, index), handlers: this._citeHandlers(), allow: (url) => !!this._g?.nav(url), openWay, citeCards, ...(below ? { below } : {}) });
         if (!el.nextElementSibling) this._scroll();
       },
       () => (this._sourcesLoad = undefined),
+    );
+  }
+
+  /** The records read in the turn now running, for the markers and Sources list of the answer it gives. */
+  private _turnSources: LocalSource[] = [];
+  /** What the visitor asked in the turn now running (or last ran): an emergency changes which number the cards call. */
+  private _turnGoal = '';
+
+  /** Records read in earlier turns, by conversation, newest first: what a turn that reads none answers from. */
+  private _readSources = new Map<string, LocalSource[]>();
+
+  /**
+   * What this turn's answer may cite: the records it read, else those the conversation read earlier, each for what it
+   * says (a place it serves, its phone, its address), never for its name alone: a reference from a hand-back, said
+   * with the business's name, isn't from the business's record.
+   */
+  private _citable(): LocalSource[] {
+    if (this._turnSources.length) return this._turnSources;
+    return this._earlierSources().map((x) => ({ ...x, keys: x.keys.filter((k) => k.toLowerCase() !== (x.card.name ?? '').toLowerCase()) }));
+  }
+
+  /** The records this conversation read before this turn: kept this session, and those its answers cited. */
+  private _earlierSources(): LocalSource[] {
+    const conv = this._active();
+    if (!conv) return [];
+    const out: LocalSource[] = [];
+    const cited = conv.items.flatMap((it) => (it.kind === 'msg' && it.sources ? it.sources : [])).reverse();
+    for (const src of [...(this._readSources.get(conv.id) ?? []), ...cited]) {
+      if (out.length >= 24) break;
+      if (!out.some((x) => x.card['@id'] === src.card['@id'])) out.push(src);
+    }
+    return out;
+  }
+
+  /** Keep a read's records (those with an `@id`) for this turn's answer: each as a card, and the words that name it. */
+  private _noteSources(res: ModelContextToolResponse): void {
+    for (const raw of extractRecords(res).slice(0, 12)) {
+      const e = compact(raw);
+      const card = readCard({ ...e, name: entityLabel(e) });
+      if (!card || this._turnSources.some((s) => s.card['@id'] === card['@id']) || this._turnSources.length >= 24) continue;
+      const addr = e.address as Record<string, unknown> | undefined;
+      const keys = [entityLabel(e), e.telephone, addr && typeof addr === 'object' ? addr.streetAddress : undefined].filter(
+        (k): k is string => typeof k === 'string' && k.trim().length >= 4,
+      );
+      // The places it serves and its seller's phone name it too, less surely: a reply about the service area cites it.
+      const places = [e.areaServed, e.serviceArea].flat().flatMap((p) => (typeof p === 'string' ? [p] : p && typeof p === 'object' ? [(p as Record<string, unknown>).name] : []));
+      const phones = [e.seller, e.provider, e.contactPoint].flat().map((p) => (p && typeof p === 'object' ? (p as Record<string, unknown>).telephone : undefined));
+      const more = [...places, ...phones].filter((k): k is string => typeof k === 'string' && k.trim().length >= 4).slice(0, 24);
+      // Its hours as a reply says them: each span of times, or round-the-clock.
+      const said = hoursText(raw) ?? '';
+      const hours = /^24 hours/.test(said) ? ['24 hours', '24/7'] : [...new Set(said.match(/(?:\d{1,2}(?::\d\d)? [ap]\.m\.|noon|midnight) to (?:\d{1,2}(?::\d\d)? [ap]\.m\.|noon|midnight)/g) ?? [])];
+      const src: LocalSource = { card, keys, ...(more.length ? { more } : {}), ...(hours.length ? { hours } : {}) };
+      this._turnSources.push(src);
+      const id = this._activeId;
+      if (id) this._readSources.set(id, [src, ...(this._readSources.get(id) ?? []).filter((x) => x.card['@id'] !== card['@id'])].slice(0, 24));
+    }
+  }
+
+  /** The page assistant's reply's markers and Sources list, from the records it read, once the reply is drawn. */
+  private _paintLocalSources(bubble: HTMLElement, sources: LocalSource[], index: number | undefined): void {
+    void this._replyDrawn.get(bubble)?.then(() =>
+      (this._sourcesLoad ??= import('./sources.js')).then(
+        (m) => {
+          const answer = bubble.isConnected ? m.localAnswer(bubble.textContent ?? '', sources) : null;
+          if (!answer) return;
+          m.paintSources(bubble, answer, { views: this._citeViews(answer, index), handlers: this._citeHandlers(), allow: (url) => !!this._g?.nav(url), openWay, citeCards });
+          if (!bubble.nextElementSibling) this._scroll();
+        },
+        () => (this._sourcesLoad = undefined),
+      ),
     );
   }
 
@@ -4011,7 +4432,7 @@ export class NxisAgent extends HTMLElement {
         }
       })
       .filter((o) => o && o !== 'null');
-    return { origins };
+    return { origins, allow: (url) => !!this._g?.nav(url) };
   }
 
   /** Every record's `@id` drawn in the active conversation before `index`: search results and remote answers. */
@@ -4063,6 +4484,8 @@ export class NxisAgent extends HTMLElement {
     }
     const who = session.operator ?? session.label;
     const q = session.queue;
+    let last: { receipt?: boolean } | undefined;
+    for (const it of this._active()?.items ?? []) if (it.kind === 'remote' && it.surface?.length) last = it;
     const inLine = q?.position ? ` · ${ordinal(q.position)} in line${q.waitMinutes ? `, about ${q.waitMinutes} min` : ''}` : ' · waiting in line';
     const doing =
       session.state === 'connecting'
@@ -4070,9 +4493,17 @@ export class NxisAgent extends HTMLElement {
         : session.state === 'queued'
           ? inLine
           : session.state === 'awaiting-visitor'
-            ? ' · waiting for your reply'
+            ? // Once the target's latest step is a receipt (./surfaces.ts), it has done its part: nothing waits on the visitor.
+              last?.receipt
+              ? ' · done'
+              : ' · waiting for your reply'
             : '';
-    this._els.handoffLabel.textContent = `Talking with ${who}${doing}`;
+    // An agent took over from the assistant; a person is talked with. Set as text: the names are another server's.
+    const label = this._els.handoffLabel;
+    label.textContent = '';
+    const name = document.createElement('b');
+    name.textContent = session.kind === 'agent' ? session.label : who;
+    label.append(...(session.kind === 'agent' ? [name, ` · handed off from the assistant${doing}`] : ['Talking with ', name, doing]));
     input.placeholder = `Message ${who}…`;
     input.setAttribute('aria-label', `Message ${who}`);
   }
@@ -4906,7 +5337,11 @@ export class NxisAgent extends HTMLElement {
       node.innerHTML = logo;
     });
     const heading = root.querySelector('.main-head h2');
-    if (heading) heading.textContent = this._name;
+    if (heading) {
+      heading.textContent = this._name;
+      // Cut short in a narrow window: the whole name on hover.
+      heading.setAttribute('title', this._name);
+    }
 
     this._paintProvenance();
     const launcher = root.querySelector('.launcher');
@@ -4949,7 +5384,13 @@ export class NxisAgent extends HTMLElement {
     for (const props of Object.values(THEME_TOKENS)) {
       for (const prop of props) this.style.removeProperty(prop);
     }
-    for (const [key, value] of Object.entries(this._theme)) {
+    // An accent alone (a site's brand color) brings its pressed shade and its wash with it, so a chosen chip, a tag
+    // and the handoff bar read in the brand rather than in the default blue.
+    const a = this._theme.accent;
+    const theme: AgentTheme = a
+      ? { accentStrong: `color-mix(in srgb, ${a} 70%, var(--ink))`, accentTint: `color-mix(in srgb, ${a} 9%, var(--bg))`, ...this._theme }
+      : this._theme;
+    for (const [key, value] of Object.entries(theme)) {
       const props = THEME_TOKENS[key as keyof AgentTheme];
       if (!props || !value) continue;
       for (const prop of props) this.style.setProperty(prop, value);
@@ -5163,7 +5604,8 @@ export class NxisAgent extends HTMLElement {
       .menu svg { width: 18px; height: 18px; }
       .main-head .brand { width: 24px; height: 24px; display: block; }
       .main-head .brand svg, .main-head .brand img { width: 24px; height: auto; display: block; }
-      .main-head h2 { margin: 0; font-family: var(--display); font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
+      .main-head h2 { margin: 0; min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--display); font-size: 16px; font-weight: 800; letter-spacing: -0.01em; }
+      .main-head .provenance { flex: none; }
       /* Tags & chips — Inter 500 13px pill, optional leading dot. */
       .tag { font-family: var(--sans); font-weight: 500; font-size: 13px; padding: 4px 12px; border-radius: var(--radius-pill); border: 1px solid var(--border-strong); color: var(--ink-2); background: var(--bg); display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
       .tag .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-3); }
@@ -5176,6 +5618,9 @@ export class NxisAgent extends HTMLElement {
       .prog > i { display: block; height: 100%; width: 0; background: var(--blue); transition: width .2s ease; }
 
       .thread { flex: 1; overflow-y: auto; padding: 22px; display: flex; flex-direction: column; gap: 10px; }
+      /* The thread scrolls; what is in it never shrinks to fit. A child with overflow other than visible (an answer
+         with Sources, a journey) has no content-sized minimum, so it would shrink to a sliver of itself. */
+      .thread > * { flex-shrink: 0; }
       .empty { margin: auto; text-align: center; color: var(--ink-3); display: flex; flex-direction: column; align-items: center; gap: 14px; }
       .empty svg, .empty img { width: 44px; height: auto; opacity: .9; }
       .empty p { max-width: 320px; font-size: 14px; line-height: 1.5; }
@@ -5476,14 +5921,16 @@ ${REMOTE_ANSWER_CSS}
       .handoff-note { align-self: center; font-size: 12px; color: var(--ink-3); padding: 2px 12px 6px; text-align: center; letter-spacing: .01em; }
       .handoff-note.done { color: var(--green-strong); }
       .handoff-note.error { color: var(--red); }
-      .handoff-bar { display: flex; align-items: center; gap: 8px; margin: 0 20px 6px; padding: 6px 6px 6px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--green-tint); color: var(--ink); font-family: var(--sans); font-size: 12.5px; }
+      /* Handed off: a strip under the header, in the accent's tint, naming who has the conversation. */
+      .handoff-bar { display: flex; align-items: center; gap: 8px; padding: 6px 14px 6px 20px; background: var(--blue-tint); border-bottom: 1px solid color-mix(in srgb, var(--blue) 22%, var(--bg)); color: var(--blue-strong); font-family: var(--sans); font-size: 12.5px; line-height: 1.4; }
       .handoff-bar[hidden] { display: none; }
-      .handoff-bar .hb-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex: none; }
-      .handoff-bar .hb-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
-      .handoff-bar .hb-back { flex: none; border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink); border-radius: var(--radius-pill); padding: 4px 11px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
-      .handoff-bar .hb-back:hover { border-color: var(--ink-3); }
+      .handoff-bar svg { width: 16px; height: 16px; flex: none; }
+      .handoff-bar .hb-label { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+      .handoff-bar .hb-label b { font-weight: 600; }
+      .handoff-bar .hb-back { flex: none; min-height: 32px; border: 0; background: none; color: inherit; padding: 4px; font: inherit; font-size: 12px; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; border-radius: 6px; }
+      .handoff-bar .hb-back:hover { text-decoration-thickness: 2px; }
       .handoff-bar .hb-back:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
-      .overlay.window .handoff-bar, .overlay.inline .handoff-bar { margin: 0 14px 6px; }
+      .overlay.window .handoff-bar, .overlay.inline .handoff-bar, .overlay.contained .handoff-bar { padding-left: 14px; }
       .composer .go svg { width: 17px; height: 17px; }
 
       /* Attribution. Quiet enough to sit under a customer's own chat surface
@@ -5693,15 +6140,15 @@ ${REMOTE_ANSWER_CSS}
           <button class="close" aria-label="Close">×</button>
         </div>
         <div class="prog"><i></i></div>
+        <div class="handoff-bar" role="status" hidden>
+          ${ICON_HANDED}<span class="hb-label"></span>
+          <button class="hb-back" type="button">Back to assistant</button>
+        </div>
         <button class="jstatus" type="button" hidden>
           <span class="js-spin" aria-hidden="true"></span><span class="js-label"></span><span class="js-go">Show</span>
         </button>
         <div class="thread"></div>
         <div class="statusline"></div>
-        <div class="handoff-bar" role="status" hidden>
-          <span class="hb-dot" aria-hidden="true"></span><span class="hb-label"></span>
-          <button class="hb-back" type="button">Back to the assistant</button>
-        </div>
         <div class="composer">
           <div class="cbox">
             <textarea rows="1" placeholder="Message the agent…" aria-label="Message the agent"></textarea>

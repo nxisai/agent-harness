@@ -110,6 +110,8 @@ The guardrails load a small chunk of their own to fetch the copy (only when the 
 - **Kept current.** Each completion sends the version held as `Nxis-Guardrails-Version`. When the proxy answers with another version in the same header, the page fetches the copy again. A change on the proxy applies to its next request at once, and to the page's own checks as soon as the new copy arrives.
 - **If it can't be fetched or read** (the network, a `405` or `404`, a malformed copy, another schema), nothing is merged: the page's configuration and the built-in defaults apply, and the proxy still enforces its own copy. A copy that loaded once is kept if a later fetch fails, since it can only be stricter.
 
+- **Opening hours.** The copy may also carry `openingHours`: the business's hours as its owner keeps them (`{ timeZone, weekly: { mon: [["07:00", "18:00"]], … }, closed?: ["YYYY-MM-DD"] }`). It is not part of the policy and merges into nothing; the results card's open status for the business's own records reads it, in that time zone (an emergency service keeps its own hours).
+
 The attribute is read once, when the guardrails load. Headless, fetch the copy yourself and pass `tighten(config, parsePolicy(copy))` as the configuration.
 
 ## The proxy contract, with guardrails

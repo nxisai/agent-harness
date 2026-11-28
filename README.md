@@ -27,7 +27,7 @@ The element registers itself, finds the page's tools, and renders a chat surface
 `npm run build:cdn` builds the element as a self-contained browser bundle, for a page that loads it from a URL with no npm install and no bundler:
 
 ```html
-<script type="module" src="https://<cdn>/harness/0.15.3/ui.js"
+<script type="module" src="https://<cdn>/harness/0.16.0/ui.js"
         integrity="sha384-…" crossorigin="anonymous"></script>
 <nxis-agent></nxis-agent>
 ```
@@ -342,7 +342,7 @@ agent.preferences.set({ name: 'Jane Doe', email: 'jane@example.com' });
 agent.preferences.set('phone', '555-0100');
 agent.preferences.get();           // all
 agent.preferences.get('email');
-agent.preferences.keys();          // ['name', 'email', 'phone', 'address']
+agent.preferences.keys();          // ['name', 'email', 'phone', 'address', 'city', 'zip']
 agent.preferences.clear('phone');
 agent.preferences.clear();
 agent.preferences.persist = true;  // survive reloads; false deletes the stored copy
@@ -350,6 +350,8 @@ agent.addEventListener('nxis-preferences-change', (e) => e.detail.preferences);
 ```
 
 Keys map onto differently named schema fields (`name` satisfies `full_name`, `fullname`, `name`). Extend `PROFILE_ALIASES` to add one.
+
+What the visitor types or confirms in a conversation (their name, email, phone, street, city and ZIP code, on a form or an agent's step) is kept with that conversation, over these values, and sent to the next agent it is handed to, so they give them once. It is never written to the preferences: "New conversation" starts without it. See [the visitor's details](docs/handoff.md#the-visitors-details).
 
 ### Theming
 
@@ -745,6 +747,8 @@ agent.handoff = {
 That offers two tools, `transfer_to_agent` and `talk_to_a_person`, listing only the targets both this config and the relay name. They are consequential: the visitor sees who the conversation goes to and the summary that goes with it, and presses **Send**. From then on what the visitor types goes to the target — its replies appear under its name, a bar above the input says who is listening, and **Back to the assistant** ends it. When the target finishes, the assistant carries on from its hand-back note ("Booked for Thursday, reference CL-4KDQ-7M2X"). A handoff survives page changes and reloads.
 
 A target can also send its sources. The envelope says the page draws them (`ui: { cards: 2 }`); an `answer` part beside a reply's text puts a numbered marker after each claim (a button, "Source 1", that highlights its source) and a **Sources** list in the bubble: one numbered row per record, its title, what it is and the passage cited, opening it as Read or Watch would, through the guardrails' navigation check. A video or a clip and a profile are also drawn as their cards under the reply (Watch, or Play with `media="play"`). Without the part's `claims` (an older target) the list is drawn with no markers. The reply's links open when the page allows their origin. See [`answer`](docs/handoff.md#answer-cards-for-an-answers-sources). Each answer with an `answerId` gets a thumbs-up and a thumbs-down button (`ui: { feedback: 1 }`), sent back to the target once, on the same task, as a [`feedback`](docs/handoff.md#feedback--and--on-an-answer) part, never as a visitor message or to the model.
+
+A target can also draw its steps in the chat (`ui: { surfaces: 3 }`): a quote's intake, its estimate with sources and the review the visitor sends, or a booking's day and arrival-window picker, the hold's countdown, the confirmation and the receipt with Add to calendar. It sends A2UI v1.0 messages in a `surface` part, drawn under its reply with the steps catalog (the basic catalog plus `DayStrip`, `WindowGrid`, `HoldCountdown`, `DateTile`, `EstimateCard`, `ConfirmCard`, `ReceiptCard`, for a guided intake `ChoiceChips`, `StepHeader` and `FieldNote`, and fields that say whether they are required and show their own errors), and each choice comes back on the same task as an `action` part. Only a `ConfirmCard`'s confirm button, which shows exactly what is sent, commits. See [Step surfaces](docs/quote-booking-surfaces.md).
 
 A target can also take a site form's place. With `takes: ['quote_form']`, while the target is available the model is not offered the quote form (page or site-wide), a call to it anyway becomes the handoff, a NxisAI app link to the form starts the handoff instead, and a `resolved` hand-back is reported to the site's analytics as the form sent. When the target is away, the form works as before. See [Targets that take a form](docs/handoff.md#targets-that-take-a-form).
 

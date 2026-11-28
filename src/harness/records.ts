@@ -12,6 +12,7 @@
  * @module
  */
 import type { ModelContextToolResponse } from '../types.js';
+import { readableType, typeOf } from './entity.js';
 
 type Obj = Record<string, unknown>;
 
@@ -80,7 +81,7 @@ function minutes(hhmm: unknown): number | null {
 }
 
 /** "7am", "5:30pm", "noon". */
-function clock(mins: number): string {
+export function clock(mins: number): string {
   const h = Math.floor(mins / 60) % 24;
   const m = mins % 60;
   if (h === 12 && m === 0) return 'noon';
@@ -157,6 +158,49 @@ export function openStatus(entity: Obj, now: Date = new Date()): OpenStatus | nu
     return { open: false, label: ahead <= 1 ? `Opens ${clock(next[0])}` : `Opens ${DAYS[d].slice(0, 3)} ${clock(next[0])}`, always: false };
   }
   return { open: false, label: 'Closed', always: false };
+}
+
+/** "7 a.m.", "6:30 p.m.", "noon", "midnight": a time as a visitor reads it. */
+function ampm(mins: number): string {
+  if (mins >= 23 * 60 + 59 || mins === 0) return mins ? 'midnight' : '12 a.m.';
+  if (mins === 720) return 'noon';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${h % 12 || 12}${m ? `:${String(m).padStart(2, '0')}` : ''} ${h < 12 ? 'a.m.' : 'p.m.'}`;
+}
+
+/**
+ * A record's opening hours in words, 12-hour, Monday first, days with the same hours run together: "Monday to Friday
+ * 7 a.m. to 6 p.m., Saturday 7 a.m. to 1 p.m., Sunday closed", or "24 hours, every day". Null when it states none.
+ */
+export function hoursText(entity: Obj): string | null {
+  const week = weekOf(entity);
+  if (!week) return null;
+  if (week.every((spans) => spans.some(([o, c]) => o === 0 && c >= 23 * 60 + 59))) return '24 hours, every day';
+  const said = (d: number) => week[d].sort((a, b) => a[0] - b[0]).map(([o, c]) => `${ampm(o)} to ${ampm(c)}`).join(' and ') || 'closed';
+  const out: string[] = [];
+  for (let i = 0; i < 7; ) {
+    let j = i;
+    while (j < 6 && said((j + 2) % 7) === said((i + 1) % 7)) j++;
+    out.push(`${DAYS[(i + 1) % 7]}${j > i ? ` to ${DAYS[(j + 1) % 7]}` : ''} ${said((i + 1) % 7)}`);
+    i = j + 1;
+  }
+  return out.join(', ');
+}
+
+/**
+ * The hours of the records a read returned, said for the model in 12-hour time, as a line after the result; '' when
+ * none states hours. Each record by name, once.
+ */
+export function hoursNote(records: Obj[]): string {
+  const lines = new Set<string>();
+  for (const r of records.slice(0, 12)) {
+    const h = hoursText(r);
+    // By name and what it is: the business's office hours and its emergency service's 24 hours read apart.
+    const kind = readableType(typeOf(r));
+    if (h) lines.add(`${str(r.name) || 'This record'}${kind && !/^(Local business|Thing|Organization)$/i.test(kind) ? ` (${kind})` : ''}: ${h}`);
+  }
+  return lines.size ? `\n(Hours in 12-hour time: ${[...lines].join('; ')})` : '';
 }
 
 // ── Facts ───────────────────────────────────────────────────────────────────

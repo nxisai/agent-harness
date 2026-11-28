@@ -138,4 +138,6 @@ export const PROFILE_ALIASES: Record<string, string[]> = {
   email: ['email', 'email_address', 'emailaddress'],
   phone: ['phone', 'phone_number', 'phonenumber', 'tel', 'mobile'],
   address: ['address', 'street_address', 'streetaddress', 'street'],
+  city: ['city', 'town', 'locality', 'address_locality', 'addresslocality'],
+  zip: ['zip', 'zip_code', 'zipcode', 'postal_code', 'postalcode', 'postcode'],
 };

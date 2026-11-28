@@ -179,8 +179,9 @@ describe('loadSiteActions', () => {
     expect(actions.map((a) => a['@id'])).toEqual(['urn:a', 'urn:b']);
   });
 
-  it('drops actions whose page is on another origin, or that name no page', async () => {
+  it('drops actions whose page is on another origin, or that name no page, and says so once at debug level', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const debug = vi.spyOn(console, 'debug').mockImplementation(() => {});
     const offsite = record('urn:evil', '/x');
     (offsite[`${S}target`] as Record<string, unknown>)[`${N}pageUrl`] = 'https://evil.example/x';
     const pageless = record('urn:none', '/x');
@@ -189,9 +190,15 @@ describe('loadSiteActions', () => {
       results: [offsite, pageless, record('urn:ok', '/ok')],
       total: 3,
     });
-    const actions = await loadSiteActions(client, INFO, { origin: ORIGIN, storage: null });
+    const storage = memoryStorage();
+    const actions = await loadSiteActions(client, INFO, { origin: ORIGIN, storage });
     expect(actions.map((a) => a['@id'])).toEqual(['urn:ok']);
-    expect(warn).toHaveBeenCalledOnce();
+    expect(warn).not.toHaveBeenCalled();
+    expect(debug).toHaveBeenCalledOnce();
+    expect(debug.mock.calls[0][0]).toBe("[nxis] skipped 2 site action(s) this page can't run: a page on https://evil.example; 1 with no page");
+    // The next page load in the tab, past the cache: the same list, and nothing said again.
+    await loadSiteActions(client, INFO, { origin: ORIGIN, storage, ttlMs: 0, now: () => Date.now() + 1 });
+    expect(debug).toHaveBeenCalledOnce();
   });
 
   it('follows page tokens when the server returns them', async () => {

@@ -19,6 +19,9 @@
 //   - the event cards (`src/ui/event-cards.ts` with the event model, `src/harness/happening.ts`) are never in the ui
 //     page-load graph: they load with a dynamic `import()` with the first result that is an event, and their chunk
 //     stays under `events.maxBytes`;
+//   - a handoff target's step surfaces (`src/ui/surfaces.ts` with the steps catalog, `src/a2ui/steps*.ts`) are
+//     never in the ui page-load graph: they load with a dynamic `import()` with the first reply that has one, and
+//     their chunk stays under `surfaces.maxBytes`;
 //   - every other lazy chunk stays under `lazyChunk.maxBytes`.
 //
 // With `--cdn`, the same checks run on the CDN build itself (scripts/build-cdn.mjs, `dist-cdn/`), file for file, plus
@@ -49,6 +52,7 @@ const isMedia = (input) => /(^|\/)dist\/media\//.test(input);
 const isGuardrails = (input) => /(^|\/)dist\/guardrails\//.test(input);
 const isHls = (input) => /node_modules\/hls\.js\//.test(input);
 const isEvents = (input) => /(^|\/)dist\/(ui\/event-cards|harness\/happening|a2ui\/events)\.js$/.test(input);
+const isSurfaces = (input) => /(^|\/)dist\/(ui\/surfaces|a2ui\/steps|a2ui\/steps-catalog)\.js$/.test(input);
 
 /**
  * Walk a build's static imports from its entry chunk.
@@ -134,6 +138,8 @@ const guardrails = ui.lazy.find((c) => c.inputs.some((i) => /dist\/guardrails\/i
 const remote = ui.lazy.find((c) => c.inputs.some((i) => /dist\/guardrails\/remote\.js$/.test(i)));
 // The event cards' chunk.
 const events = ui.lazy.find((c) => c.inputs.some((i) => /dist\/ui\/event-cards\.js$/.test(i)));
+// A handoff target's step surfaces' chunk.
+const surfaces = ui.lazy.find((c) => c.inputs.some((i) => /dist\/ui\/surfaces\.js$/.test(i)));
 
 const failures = [];
 const limit = BUDGET.ui.baselineBytes + BUDGET.ui.marginBytes;
@@ -163,13 +169,18 @@ if (eagerEvents.length) failures.push(`the event cards are in the ui page-load g
 if (events && events.gzip > BUDGET.events.maxBytes) {
   failures.push(`the event cards chunk is ${kb(events.gzip)} gzip, over its budget of ${kb(BUDGET.events.maxBytes)}`);
 }
+const eagerSurfaces = ui.initial.inputs.filter(isSurfaces);
+if (eagerSurfaces.length) failures.push(`the step surfaces are in the ui page-load graph (imported statically): ${eagerSurfaces.join(', ')}`);
+if (surfaces && surfaces.gzip > BUDGET.surfaces.maxBytes) {
+  failures.push(`the step surfaces chunk is ${kb(surfaces.gzip)} gzip, over its budget of ${kb(BUDGET.surfaces.maxBytes)}`);
+}
 if (media && media.gzip > BUDGET.media.maxBytes) {
   failures.push(`the media chunk is ${kb(media.gzip)} gzip, over its budget of ${kb(BUDGET.media.maxBytes)}`);
 }
 /** A chunk's name for the report: its path in the CDN build, or its file name in a scratch build. */
 const label = (k) => (cdn ? relative(ROOT, join(ROOT, k)) : k.split('/').pop());
 // Every other lazy chunk (sources, feedback, and whatever splitting shares between them).
-const budgeted = new Set([media, guardrails, remote, events].filter(Boolean).map((c) => c.chunk));
+const budgeted = new Set([media, guardrails, remote, events, surfaces].filter(Boolean).map((c) => c.chunk));
 const others = ui.lazy.filter((c) => !budgeted.has(c.chunk));
 for (const c of others) {
   if (c.gzip > BUDGET.lazyChunk.maxBytes) {
@@ -195,6 +206,7 @@ const report = {
     : null,
   guardrailsRemote: remote ? { gzip: remote.gzip, raw: remote.raw, limit: BUDGET.guardrailsRemote.maxBytes, chunk: relative(ROOT, remote.chunk) } : null,
   events: events ? { gzip: events.gzip, raw: events.raw, limit: BUDGET.events.maxBytes, chunk: label(events.chunk) } : null,
+  surfaces: surfaces ? { gzip: surfaces.gzip, raw: surfaces.raw, limit: BUDGET.surfaces.maxBytes, chunk: label(surfaces.chunk) } : null,
   lazyChunks: ui.lazy.length,
   otherLazy: others.map((c) => ({ gzip: c.gzip, raw: c.raw, limit: BUDGET.lazyChunk.maxBytes, chunk: label(c.chunk) })),
   ...(cdn ? { build: 'cdn', proxy } : { build: 'measured' }),
@@ -220,6 +232,9 @@ if (asJson) {
   console.log(events
     ? `event cards chunk    ${kb(events.gzip)} gzip (${kb(events.raw)} raw); limit ${kb(BUDGET.events.maxBytes)}; loads with the first event`
     : 'event cards chunk    none');
+  console.log(surfaces
+    ? `step surfaces chunk  ${kb(surfaces.gzip)} gzip (${kb(surfaces.raw)} raw); limit ${kb(BUDGET.surfaces.maxBytes)}; loads with the first step surface`
+    : 'step surfaces chunk  none');
   for (const c of others) console.log(`lazy chunk           ${kb(c.gzip)} gzip (${kb(c.raw)} raw); limit ${kb(BUDGET.lazyChunk.maxBytes)}; ${label(c.chunk)}`);
   if (proxy) console.log(`cdn proxy.js         ${kb(proxy.gzip)} gzip (${kb(proxy.raw)} raw); limit ${kb(proxy.limit)}`);
   if (cdn) console.log(`(measured: the CDN build, entry ${label(ui.entry)})`);

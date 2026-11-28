@@ -69,9 +69,9 @@ const envelope = (conversationId: string) => buildEnvelope({ target: 'support', 
 
 describe('the capability and the part', () => {
   it('declares feedback beside cards, not as something shared', () => {
-    expect(HANDOFF_UI).toEqual({ cards: 2, feedback: 1 });
+    expect(HANDOFF_UI).toEqual({ cards: 2, feedback: 1, surfaces: 3 });
     const env = envelope('c');
-    expect(env.ui).toEqual({ cards: 2, feedback: 1 });
+    expect(env.ui).toEqual({ cards: 2, feedback: 1, surfaces: 3 });
     expect(env.consent.shared).not.toContain('ui');
   });
 

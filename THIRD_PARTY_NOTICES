@@ -6,8 +6,10 @@ This package includes the following third-party software, under the licences bel
 
 Heroicons v2.2.0 (https://heroicons.com, https://github.com/tailwindlabs/heroicons)
 Used in: src/ui/feedback.ts (hand-thumb-up and hand-thumb-down, 24/outline and
-24/solid), src/ui/sources.ts (arrow-top-right-on-square, 24/outline), and the
-files built from them.
+24/solid), src/ui/sources.ts (arrow-top-right-on-square, 24/outline),
+src/a2ui/steps-catalog.ts (check-circle, wrench, clock, calendar, chevron-left
+and chevron-right, 24/outline; check-circle, 24/solid), and the files built from
+them.
 
 MIT License
 

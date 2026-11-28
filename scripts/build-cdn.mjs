@@ -8,7 +8,7 @@
 //
 //   harness/<version>/ui.js           `./ui`, bundled with the size budget's esbuild options (scripts/bundle-options.mjs).
 //                                     Importing it registers <nxis-agent>, as the npm module does.
-//   harness/<version>/<name>-<hash>.js every dynamic import() (media, guardrails, the guardrails policy, sources,
+//   harness/<version>/<name>-<hash>.js every dynamic import() (media, guardrails, the guardrails policy, sources, step surfaces,
 //                                     feedback), as content-hashed chunks beside ui.js, loaded on first use. Beside it,
 //                                     not in a subdirectory: a longer import path in ui.js would make it differ, by a
 //                                     few bytes, from the bundle the size budget measures
@@ -122,6 +122,7 @@ export async function buildCdn(o = {}) {
       guardrailsRemote: chunkOf(/dist\/guardrails\/remote\.js$/),
       sources: chunkOf(/dist\/ui\/sources\.js$/),
       feedback: chunkOf(/dist\/ui\/feedback\.js$/),
+      surfaces: chunkOf(/dist\/ui\/surfaces\.js$/),
     },
     files,
   };

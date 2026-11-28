@@ -14,6 +14,7 @@ let narrow = false;
 let fetchSpy: ReturnType<typeof vi.fn>;
 beforeEach(() => {
   localStorage.clear();
+  sessionStorage.clear();
   narrow = false;
   fetchSpy = vi.fn(async () => new Response('{}'));
   vi.stubGlobal('fetch', fetchSpy);
