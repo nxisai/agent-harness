@@ -648,11 +648,12 @@ describe('Surfaces: where they go and how they update', () => {
     expect(document.head.querySelector('style[data-surfaces]')).not.toBeNull();
   });
 
-  it('a step surface spans the panel, and its basic fields share one label color, size and weight', async () => {
+  it('a step surface spans the panel up to a card\'s width, and its basic fields share one label color, size and weight', async () => {
     const s = new Surfaces(host().h);
     thread().reply([INTAKE], s);
     const css = document.head.querySelector('style[data-surfaces]')!.textContent!;
-    expect(css).toMatch(/\.surface \{ width: 100%; margin-top: 6px; \}/);
+    // Capped, so in full screen a card keeps its window shape instead of stretching its button across the screen.
+    expect(css).toMatch(/\.surface \{ width: 100%; max-width: 560px; margin-top: 6px; \}/);
     expect(css).not.toMatch(/420px|460px/);
     expect(css).toMatch(/\.remote\.has-surface \{ max-width: 100%; width: 100%; \}/);
     expect(css).toContain('--a2ui-choicepicker-label-color: var(--ink); --a2ui-choicepicker-label-font-size: 13px; --a2ui-choicepicker-label-font-weight: 600;');

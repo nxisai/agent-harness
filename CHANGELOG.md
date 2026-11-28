@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.16.1 (2026-11-28)
+
+A fix for full screen on top of 0.16.0.
+
+### Fixed
+
+- **Step cards keep their shape in full screen.** An agent's step card (a request or booking review, a form) no longer spans the whole conversation: it is capped at 560px, so its primary button isn't stretched across the screen and its labels stay next to their values. The window view is unchanged.
+
 ## 0.16.0 (2026-11-24)
 
 Quotes and bookings drawn as step cards in the chat, replies in markdown with citations, and the visitor's details asked once per conversation. Many fixes to hours, citations, handoffs and step cards.

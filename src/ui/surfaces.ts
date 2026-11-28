@@ -55,10 +55,12 @@ export interface SurfacesHost {
   save(): void;
 }
 
-// A step surface spans the panel, and its basic fields' labels read as the step components' do: one color, size
-// and weight for a ChoicePicker's and a TextField's alike.
+// A step surface spans the panel up to a card's width, and its basic fields' labels read as the step components' do:
+// one color, size and weight for a ChoicePicker's and a TextField's alike. The cap keeps a card the same shape in
+// full screen as in the window: spanning a wide thread, its primary button stretched across the screen and its
+// labels sat far from their values.
 const CSS = `
-.surface { width: 100%; margin-top: 6px; }
+.surface { width: 100%; max-width: 560px; margin-top: 6px; }
 .surface.a2ui-scope {
   --a2ui-choicepicker-label-color: var(--ink); --a2ui-choicepicker-label-font-size: 13px; --a2ui-choicepicker-label-font-weight: 600;
   --a2ui-textfield-label-font-size: 13px; --a2ui-textfield-label-font-weight: 600;

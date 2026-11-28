@@ -1,6 +1,6 @@
 {
   "name": "@nxisai/agent-harness",
-  "version": "0.16.0",
+  "version": "0.16.1",
   "description": "An on-device agent for the browser: a tool-calling harness over WebMCP and remote MCP, plus a drop-in chat UI. Decides whether to run a tool, ask for what's missing, or confirm before writing.",
   "type": "module",
   "main": "./dist/index.js",
