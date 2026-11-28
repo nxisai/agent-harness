@@ -16,6 +16,7 @@ import type { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { isRateLimited, retryAfterMs, withRetry } from './retry.js';
 import { TRACK_TOOL } from './report.js';
 import { toolOrigins } from '../policy.js';
+import { readSession, sessionStore, writeSession } from './session-cache.js';
 import type {
   JsonSchema,
   McpServerInfo,
@@ -313,10 +314,15 @@ function isReadOnly(tool: RemoteTool, override?: ToolOverride): boolean {
  * List the server's tools, falling back to the tools its card advertises when
  * `tools/list` is unavailable.
  */
-async function listRemoteTools(client: Client, info: McpServerInfo): Promise<RemoteTool[]> {
+async function listRemoteTools(client: Client, info: McpServerInfo, storage: Storage | null): Promise<RemoteTool[]> {
+  const kept = cachedRemoteTools(info, storage);
+  if (kept) return kept;
   try {
     const res = await client.listTools();
-    return res.tools as unknown as RemoteTool[];
+    const tools = res.tools as unknown as RemoteTool[];
+    // Only a real list is kept: the card's fallback names are a stopgap, and the next page asks again.
+    writeSession(storage, toolsCacheKey(info.endpoint), tools);
+    return tools;
   } catch (err) {
     console.warn('[nxis] tools/list failed; falling back to card publicTools', err);
     return info.publicTools.map((name) => ({ name }));
@@ -357,7 +363,26 @@ export interface BridgeOptions {
    * @returns True to register it.
    */
   accept?(name: string): boolean;
+  /**
+   * Where the server's tool list is kept for the tab's session, keyed by its endpoint, so a page load in the same
+   * session lists no tools. Defaults to `sessionStorage`; null disables (as for a client with a key, whose list may
+   * hold private tools).
+   */
+  storage?: Storage | null;
 }
+
+/** The key a server's tool list is kept under. */
+export const toolsCacheKey = (endpoint: string): string => `nxis:mcp-tools:v1:${endpoint}`;
+
+/** The server's tool list as this session last read it, or null. */
+function cachedRemoteTools(info: Pick<McpServerInfo, 'endpoint'>, storage: Storage | null): RemoteTool[] | null {
+  const tools = readSession<RemoteTool[]>(storage, toolsCacheKey(info.endpoint));
+  return Array.isArray(tools) ? tools : null;
+}
+
+/** Whether this session has the server's tool list, so registering its tools needs no connection. */
+export const hasCachedTools = (info: Pick<McpServerInfo, 'endpoint'>, storage: Storage | null = sessionStore()): boolean =>
+  !!cachedRemoteTools(info, storage);
 
 /**
  * Register every accepted remote tool into a model context.
@@ -378,7 +403,7 @@ export async function registerRemoteTools(
   opts: BridgeOptions = {},
 ): Promise<string[]> {
   const accept = opts.accept ?? ((name: string) => !SERVER_ONLY_TOOLS.has(name));
-  const tools = (await listRemoteTools(client, info)).filter((t) => accept(t.name));
+  const tools = (await listRemoteTools(client, info, opts.storage === undefined ? sessionStore() : opts.storage)).filter((t) => accept(t.name));
   // A registry rejects a name it already holds (WebMCP: InvalidStateError), and older polyfills
   // replaced it. Skipping names already present behaves the same on every one.
   const present = await registeredNames(mc);

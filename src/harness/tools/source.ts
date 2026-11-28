@@ -13,7 +13,7 @@
  * @module
  */
 
-import { registerRemoteTools, type BridgeOptions } from './bridge.js';
+import { hasCachedTools, registerRemoteTools, type BridgeOptions } from './bridge.js';
 import { ensureModelContext } from './local-context.js';
 import { connectMcp } from './client.js';
 import { discoverMcpServer } from './discovery.js';
@@ -201,8 +201,15 @@ async function connectRegistry(
   let remoteTools: string[];
   try {
     info = await discoverMcpServer();
-    client = await connectMcp(info, apiKey);
-    remoteTools = await registerRemoteTools(client, mc, info, { accept: opts.accept });
+    // A key's tool list may hold private tools, so it is never kept in the tab.
+    const storage = apiKey ? null : undefined;
+    const lazy = lazyClient(() => connectMcp(info, apiKey));
+    client = lazy;
+    // The first page of a session connects now, so a server that won't connect leaves the navigation tools only.
+    // After that every read connecting needs is kept in the tab (the server, its tools, the site's actions and
+    // pages), so a page load registers them all without a request, and the session opens when a tool first runs.
+    if (!hasCachedTools(info, storage)) await lazy.ready();
+    remoteTools = await registerRemoteTools(client, mc, info, { accept: opts.accept, storage });
   } catch (err) {
     // No server, so no page list — but the address bar still says where the visitor is, and
     // "home" and "back" need nothing else. An unreachable corpus is not a reason to lose those.
@@ -343,6 +350,21 @@ async function pageRecords(client: Client, info: McpServerInfo, siteOpts: SiteAc
     console.warn(`[nxis] page records unavailable, using action pages only: ${errorText(err)}`);
     return [];
   }
+}
+
+/** A client that opens its session on first use: once, again after a failure. */
+function lazyClient(open: () => Promise<Client>): Client & { ready(): Promise<Client> } {
+  let session: Promise<Client> | null = null;
+  const ready = (): Promise<Client> =>
+    (session ??= open().catch((err) => {
+      session = null;
+      throw err;
+    }));
+  return {
+    ready,
+    callTool: (...a: Parameters<Client['callTool']>) => ready().then((c) => c.callTool(...a)),
+    listTools: (...a: Parameters<Client['listTools']>) => ready().then((c) => c.listTools(...a)),
+  } as unknown as Client & { ready(): Promise<Client> };
 }
 
 /** The navigation tools with nothing but the page's own address to go on. */

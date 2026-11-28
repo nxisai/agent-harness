@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.16.2 (2026-11-28)
+
+WebMCP tools on page load, on top of 0.16.1.
+
+### Fixed
+
+- **The WebMCP tools are on the page before the chat opens.** The element registers its tools as it boots: the site's remote tools (`nxis_query`, `nxis_get`, `nxis_list_types`), its forms, `open_page`, `page_links` and the handoff tools, read beside them so they arrive together. Before, none were registered until a visitor opened the chat, so a browser agent, which never opens it, found none. Registering calls no model; opening the chat afterwards reuses the same connection, registering nothing twice and firing no extra `toolchange`. What connecting reads is kept in the tab for ten minutes, now including the discovered server and its `tools/list` beside the site's actions and pages, so after a session's first page a page load registers every tool without a request, and the MCP session opens when a tool first runs. A site whose WebMCP mode is `none` registers nothing until the chat opens, as before; a `contained` preview never does.
+  - **Sizes.** The ui page-load budget's margin rises from 26,048 to 26,560 B (26,359 B with it, +432 B).
+
 ## 0.16.1 (2026-11-28)
 
 A fix for full screen on top of 0.16.0.

@@ -9,6 +9,10 @@
  * @module
  */
 import type { CatalogEntry, CatalogFile, McpServerInfo, ServerCard } from '../../types.js';
+import { readSession, sessionStore, writeSession } from './session-cache.js';
+
+/** Where a discovered server is kept for the tab's session. */
+export const SERVER_CACHE_KEY = 'nxis:mcp-server:v1';
 
 async function fetchJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { headers: { Accept: 'application/json' } });
@@ -49,8 +53,25 @@ async function resolveServerCardUrl(): Promise<string> {
   throw new Error('No MCP server-card URL found in .well-known catalogs');
 }
 
-/** Discover the remote MCP server: card URL → endpoint, auth, public tools. */
-export async function discoverMcpServer(): Promise<McpServerInfo> {
+/**
+ * Discover the remote MCP server: card URL → endpoint, auth, public tools.
+ *
+ * A server found is kept in the tab's session storage for ten minutes, so the
+ * harness connecting on every page load reads the catalogs once a session.
+ * A failure is never kept: the next page looks again.
+ *
+ * @param opts.storage - Where the server is kept. Defaults to `sessionStorage`; null disables.
+ */
+export async function discoverMcpServer(opts: { storage?: Storage | null } = {}): Promise<McpServerInfo> {
+  const storage = opts.storage === undefined ? sessionStore() : opts.storage;
+  const kept = readSession<McpServerInfo>(storage, SERVER_CACHE_KEY);
+  if (kept?.endpoint) return kept;
+  const info = await findServer();
+  writeSession(storage, SERVER_CACHE_KEY, info);
+  return info;
+}
+
+async function findServer(): Promise<McpServerInfo> {
   const cardUrl = await resolveServerCardUrl();
   const card = await fetchJson<ServerCard>(cardUrl);
 

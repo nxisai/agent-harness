@@ -113,3 +113,41 @@ describe('discoverMcpServer', () => {
     );
   });
 });
+
+describe('discoverMcpServer, kept for the session', () => {
+  /** An in-memory `Storage`. */
+  function memory(): Storage {
+    const m = new Map<string, string>();
+    return {
+      get length() {
+        return m.size;
+      },
+      clear: () => m.clear(),
+      getItem: (k) => m.get(k) ?? null,
+      key: (i) => [...m.keys()][i] ?? null,
+      removeItem: (k) => void m.delete(k),
+      setItem: (k, v) => void m.set(k, String(v)),
+    };
+  }
+
+  it('reads the catalogs once a session: the next page load takes the server it kept', async () => {
+    const asked = serve({
+      '/.well-known/ai-catalog.json': { body: catalog(CARD_URL) },
+      [CARD_URL]: { body: CARD },
+    });
+    const storage = memory();
+    const first = await discoverMcpServer({ storage });
+    const second = await discoverMcpServer({ storage });
+    expect(second).toEqual(first);
+    expect(asked).toEqual(['/.well-known/ai-catalog.json', CARD_URL]);
+  });
+
+  it('keeps no failure: the next page looks again', async () => {
+    const asked = serve({});
+    const storage = memory();
+    await expect(discoverMcpServer({ storage })).rejects.toThrow();
+    await expect(discoverMcpServer({ storage })).rejects.toThrow();
+    expect(asked.filter((u) => u === '/.well-known/ai-catalog.json')).toHaveLength(2);
+    expect(storage.length).toBe(0);
+  });
+});

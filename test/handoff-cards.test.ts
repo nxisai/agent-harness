@@ -3,9 +3,9 @@
  * Handoff targets from A2A Agent Cards: NxisAI's relay serves the site's specialists as cards at
  * `<edge>/v1/s/<site>/agents`, beside `…/handoff`, and a self-deployed site names its own cards per target.
  *
- * Covered: cards become the handoff tools, described from the card's description and skills; nothing is read on
- * load; a card that points anywhere but the relay is ignored; a page's own `targets` work as before, merged with the
- * cards; a specialist paused since the last read is gone from the next turn; the ETag is sent back; a self-deployed
+ * Covered: cards become the handoff tools, described from the card's description and skills; they are read as the
+ * element boots, so the tools are on the page before the chat opens; a card that points anywhere but the relay is
+ * ignored; a page's own `targets` work as before, merged with the cards; a specialist paused since the last read is gone from the next turn; the ETag is sent back; a self-deployed
  * card is read with the same parser.
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -119,8 +119,8 @@ describe('cards become the handoff tools', () => {
   });
 });
 
-describe('cards load lazily', () => {
-  it('makes no request when the page sets the handoff config, only when the agent is opened', async () => {
+describe('cards load with the element', () => {
+  it('registers the handoff tool as the element boots, before the chat opens, and opening registers nothing twice', async () => {
     const edge = fakeEdge({ cards: [card('support')], listed: listedAs('support') });
     const registered: ModelContextTool[] = [];
     (document as any).modelContext = Object.assign(new EventTarget(), {
@@ -134,12 +134,15 @@ describe('cards load lazily', () => {
     el.setAttribute('site-actions', 'false');
     document.body.append(el);
     el.handoff = { relay: RELAY, fetchImpl: edge.fetchImpl };
-    await settle(20);
-    expect(edge.requests).toHaveLength(0);
-    el.open();
     for (let i = 0; i < 200 && !registered.length; i++) await settle(5);
+    expect(el.isOpen).toBe(false);
     expect(registered.map((t) => t.name)).toEqual([TRANSFER_TO_AGENT_TOOL]);
     expect(edge.requests.map((r) => r.url).sort()).toEqual([AGENTS, RELAY]);
+    el.open();
+    await settle(50);
+    expect(registered.map((t) => t.name)).toEqual([TRANSFER_TO_AGENT_TOOL]);
+    // The targets are kept thirty seconds: opening reads nothing again.
+    expect(edge.requests).toHaveLength(2);
     el.remove();
     delete (document as any).modelContext;
   });

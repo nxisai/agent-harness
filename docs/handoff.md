@@ -48,7 +48,7 @@ agent.handoff = { relay: 'https://agents.nxis.ai/v1/s/<site>/handoff' };
 
 The relay serves the site's specialists as [A2A Agent Cards](https://a2a-protocol.org/latest/specification/) beside it: `GET <edge>/v1/s/<site>/agents` answers `{ "agents": [AgentCard, …] }`, with an `ETag`. Each card carries the NxisAI handoff extension, `https://nxis.ai/a2a/handoff/v1`, whose `params` are `{ target, kind, label }`, and its `url` is the relay's own endpoint for that target, `<edge>/v1/s/<site>/handoff/<target>`. The harness:
 
-- **reads the cards lazily**: with the relay's target list, the first time the targets are read (when the agent is first opened), never on page load. The code that reads them is a chunk of its own, loaded then too.
+- **reads the cards as the element boots**: with the relay's target list, beside the site's tool discovery, so the handoff tools are on the page's registry before the chat opens, where a browser agent can find them. The code that reads them is a chunk of its own, loaded then too.
 - **keeps them thirty seconds**, like the target list, and reads them again after that with `If-None-Match`, so an unchanged list costs a 304. A specialist enabled, renamed or paused in the dashboard reaches the chat within a minute, with no site deploy: every turn describes the handoff tools from the targets listed now, and leaves out a tool with none left.
 - **trusts only the relay's cards**: a card whose `url` isn't on the relay's origin, under the relay's path, for the target it names, is ignored. A card the relay's target list doesn't list is not offered either.
 - **tells the model what each one does**: the tool's description gives each target's card description and its skills, each with its description and up to two examples.

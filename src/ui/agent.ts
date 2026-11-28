@@ -914,6 +914,11 @@ export class NxisAgent extends HTMLElement {
       this._stopTurn();
     });
 
+    // The tools register as the element boots, not when the chat opens: a browser agent reads the page's registry
+    // and never opens the chat. Registering calls no model, and opening later connects nothing again. A site whose
+    // WebMCP mode is "none" registers no tools on the page until the visitor opens the chat.
+    if (window.__NXIS_CONFIG__?.webmcp?.mode !== 'none') void this._connectTools();
+
     const preload = this.preload;
     if (preload !== 'none') this.provider.preload?.(preload);
     // Contained, opening on connect doesn't take focus: the preview sits in
@@ -4766,9 +4771,13 @@ export class NxisAgent extends HTMLElement {
    * same connection lists the actions on the site's other pages, unless
    * `site-actions="false"`.
    *
-   * Runs on first open rather than on connect, so an unopened launcher costs no
-   * network request. Failure is neither fatal nor loud: a site with no MCP
-   * server is an ordinary case, and the page's own tools work regardless.
+   * Runs as the element connects (and on open, a send or a form start, which
+   * all share the first run), so a browser agent finds the tools without the
+   * chat being opened. What it reads is kept in the tab (the server, its tool
+   * list, the site's actions and pages), so after a session's first page it
+   * costs no request until a tool runs. Failure is neither fatal nor loud: a
+   * site with no MCP server is an ordinary case, and the page's own tools work
+   * regardless.
    */
   private _connectTools(): Promise<void> {
     if (this._connect) return this._connect;
@@ -4782,6 +4791,8 @@ export class NxisAgent extends HTMLElement {
       this._connect = this._registerHandoffBounded();
       return this._connect;
     }
+    // The handoff targets are read beside discovery, so their tool registers with the rest rather than after it.
+    void this._handoff?.targets();
     // No credential is passed, and the element takes none: a key in markup or
     // in a page global is served to every visitor and readable by every script
     // on the origin. Private tools belong behind an endpoint you host — see
